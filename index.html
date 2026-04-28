@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanishq's Developer Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="left">Tani$hq.</div>
+            
+            <ul class="nav-links" id="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#certificates">Certifications</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><button id="theme-toggle" class="theme-btn">☀️ Light Mode</button></li>
+            </ul>
+
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1>Hi, I'm <span id="typed-name" class="highlight"></span><span class="cursor">|</span></h1>
+                <p id="dynamic-role" class="dynamic-text"></p>
+
+                <div class="hero-buttons">
+                    <a href="#projects" class="btn">View My Projects</a>
+                    <a href="#contact" class="btn outline">Contact Me</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="photo1.webp" alt="Tanishq Kushwaha">
+            </div>
+        </section>
+
+        <section id="about" class="about-section">
+            <div class="about-content">
+                <h2>About <span class="highlight">Me</span></h2>
+                <p>I'm an Information Technology student at Government Polytechnic, Kanpur, driven by a passion for building logical, well-structured systems. As a certified Junior Software Developer and Cybersecurity specialist, I focus on turning complex coding challenges into practical, real-world solutions. For me, writing code isn't just about syntax—it's about engineering secure, scalable digital solutions that make a real impact.</p>
+                <div class="skills-container">
+                    <span class="skill-tag">HTML5</span>
+                    <span class="skill-tag">CSS3</span>
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">MS. Office</span>
+                    <span class="skill-tag">Git & GitHub</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects" class="projects-section">
+            <h2>My <span class="highlight">Projects</span></h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <h3>BTEUP Result Link Generator</h3>
+                    <p>A lightweight utility hosted on GitHub Pages to generate and manage result links efficiently.</p>
+                    <div class="project-links">
+                        <a href="https://tanishq-kushwaha.github.io/BTE-Result-Generator/" class="btn-small">Live Demo</a>
+                        <a href="https://github.com/Tanishq-kushwaha/BTE-Result-Generator" class="btn-small outline">GitHub</a>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3>Cyber-Safe Password Analyzer</h3>
+                    <p>A security tool built with Vanilla CSS and Bootstrap to analyze and strengthen password security.</p>
+                    <div class="project-links">
+                        <a href="javascript:void(0)" class="btn-small" style="cursor: default; opacity: 0.7;">Coming Soon</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="certificates" class="certificates-section">
+            <h2>My <span class="highlight">Certifications</span></h2>
+            <div class="certificates-grid">
+                <div class="cert-card">
+                    <h3>Foundations of Cybersecurity</h3>
+                    <p>Google / Coursera</p>
+                    <a href="https://www.coursera.org/account/accomplishments/verify/PCQJQP65PTPO" class="btn-small outline mt-15">Verify</a>
+                </div>
+                <div class="cert-card">
+                    <h3>Junior Software Developer</h3>
+                    <p>Skill India / NCVET</p>
+                    <a href="https://www.linkedin.com/in/tanishq-kushwaha-846b05375/" class="btn-small outline mt-15">Verify on LinkedIn</a>
+                </div>
+                <div class="cert-card">
+                    <h3>Course on Computer Concepts</h3>
+                    <p>NIELIT</p>
+                    <a href="https://www.linkedin.com/in/tanishq-kushwaha-846b05375/" class="btn-small outline mt-15">Verify on LinkedIn</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact-section">
+            <h2>Get In <span class="highlight">Touch</span></h2>
+            <p>My inbox isn't open for casual ideas—I only engage with high-level inquiries that challenge my intellectual capacity. I don't just build websites; I design digital ecosystems that command dominance. If your vision is limited and your budget is constrained, we likely have no ground to connect. I'm not simply costly; I'm intentionally exclusive.</p>
+            <div class="contact-links">
+                <a href="mailto:tanishqkushwaha09@gmail.com" class="btn">Say Hello</a>
+                <a href="https://www.linkedin.com/in/tanishq-kushwaha-846b05375/" class="btn outline">LinkedIn</a>
+                <a href="https://github.com/Tanishq-kushwaha" class="btn outline">GitHub</a>
+                <a href="https://www.instagram.com/tanishx.kushwaha/" class="btn outline">Instagram</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
