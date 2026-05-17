@@ -43,7 +43,7 @@ function typeName() {
 }
 
 const roleElement = document.getElementById('dynamic-role');
-const roles = ["Junior Software Developer", "Frontend Developer", "Logic Builder", "Problem Solver"];
+const roles = ["Junior Software Developer", "Frontend Developer", "Problem Solver"];
 let roleIndex = 0;
 let charIndex = 0;
 let isDeleting = false;
