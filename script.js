@@ -3,30 +3,32 @@ window.addEventListener("scroll", () => {
     header.classList.toggle("sticky", window.scrollY > 0);
 });
 
+
+
 const themeBtn = document.getElementById('theme-toggle');
 const body = document.body;
 
 const setTheme = (theme) => {
-    if (theme === 'light') {
-        body.setAttribute('data-theme', 'light');
-        themeBtn.textContent = '🌙 Dark Mode';
-        localStorage.setItem('theme', 'light');
-    } else {
-        body.removeAttribute('data-theme');
+    if (theme === 'dark') {
+        body.setAttribute('data-theme', 'dark');
         themeBtn.textContent = '☀️ Light Mode';
         localStorage.setItem('theme', 'dark');
+    } else {
+        body.removeAttribute('data-theme');
+        themeBtn.textContent = '🌙 Dark Mode';
+        localStorage.setItem('theme', 'light');
     }
 };
 
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme) {
-    setTheme(savedTheme);
-}
+// Agar koi data nahi hai, toh default 'light' select hoga
+const savedTheme = localStorage.getItem('theme') || 'light';
+setTheme(savedTheme);
 
 themeBtn.addEventListener('click', () => {
-    const isCurrentlyLight = body.getAttribute('data-theme') === 'light';
-    setTheme(isCurrentlyLight ? 'dark' : 'light');
+    const isCurrentlyDark = body.getAttribute('data-theme') === 'dark';
+    setTheme(isCurrentlyDark ? 'light' : 'dark');
 });
+
 
 const nameElement = document.getElementById('typed-name');
 const myName = "Tanishq Kushwaha";
