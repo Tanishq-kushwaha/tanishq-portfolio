@@ -95,7 +95,7 @@ document.querySelectorAll('.nav-links a').forEach(link => {
 
 
 let aboutMe = document.querySelector(".about-text");
-aboutMe.innerText = "I am a Frontend Developer and NASSCOM-certified Junior Software Developer focused on building clean, responsive, and logic-first web experiences. Currently expanding my knowledge in computer science fundamentals and Cybersecurity basics, I enjoy solving algorithmic challenges and turning ideas into functional code. For me, web development is about engineering clean logic, secure structures, and writing code that works flawlessly across all devices.";
+aboutMe.innerText = "I am a Frontend Developer and Skill india digital hub certified Junior Software Developer focused on building clean, responsive, and logic-first web experiences. Currently expanding my knowledge in computer science fundamentals and Cybersecurity basics, I enjoy solving algorithmic challenges and turning ideas into functional code. For me, web development is about engineering clean logic, secure structures, and writing code that works flawlessly across all devices.";
 
 
 let contact = document.querySelector("#contact-text");
