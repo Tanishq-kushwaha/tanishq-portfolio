@@ -38,7 +38,7 @@ function typeName() {
     if (nameIndex < myName.length) {
         nameElement.textContent += myName.charAt(nameIndex);
         nameIndex++;
-        setTimeout(typeName, 120); 
+        setTimeout(typeName, 120);
     } else {
         setTimeout(startDynamicRoles, 500);
     }
@@ -52,7 +52,7 @@ let isDeleting = false;
 
 function startDynamicRoles() {
     const currentRole = roles[roleIndex];
-    
+
     if (isDeleting) {
         roleElement.textContent = currentRole.substring(0, charIndex - 1);
         charIndex--;
@@ -69,14 +69,14 @@ function startDynamicRoles() {
     } else if (isDeleting && charIndex === 0) {
         isDeleting = false;
         roleIndex = (roleIndex + 1) % roles.length;
-        typeSpeed = 500; 
+        typeSpeed = 500;
     }
 
     setTimeout(startDynamicRoles, typeSpeed);
 }
 
 window.onload = () => {
-    setTimeout(typeName, 500); 
+    setTimeout(typeName, 500);
 };
 
 const hamburger = document.getElementById('hamburger');
