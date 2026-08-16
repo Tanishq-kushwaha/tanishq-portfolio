@@ -2,6 +2,9 @@
 
 > A clean, responsive & performance-focused personal portfolio showcasing my journey as a Junior Software Developer.
 
+## 🚀 About This Portfolio
+A personal portfolio showcasing my projects, technical skills, and journey as an Information Technology developer.
+
 🔗 **Live Website:** [https://tanishq-kushwaha.github.io/tanishq-portfolio/](https://tanishq-kushwaha.github.io/tanishq-portfolio/)
 
 ---
