@@ -112,6 +112,24 @@ nav {
     color: var(--accent);
 }
 
+/* Active nav link styling */
+.nav-links li a.active {
+    color: var(--accent);
+    font-weight: 700;
+    position: relative;
+}
+
+.nav-links li a.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+    border-radius: 4px;
+}
+
 .theme-btn {
     background-color: transparent;
     border: 1px solid var(--accent);

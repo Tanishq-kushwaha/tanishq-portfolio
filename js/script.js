@@ -95,3 +95,43 @@ document.querySelectorAll('.nav-links a').forEach(link => {
     });
 });
 
+// Active nav link highlight based on scroll position and clicks
+const navLinks = document.querySelectorAll('.nav-links a');
+const sections = Array.from(navLinks)
+    .map(link => document.querySelector(link.getAttribute('href')))
+    .filter(Boolean);
+
+function updateActiveLink() {
+    const offset = 150; // adjust for header height
+    const current = window.scrollY + offset;
+
+    // Find the last section above the current scroll position
+    let found = false;
+    for (let i = sections.length - 1; i >= 0; i--) {
+        const sec = sections[i];
+        if (!sec) continue;
+        const top = sec.offsetTop;
+        if (current >= top) {
+            const id = '#' + sec.id;
+            navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === id));
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        navLinks.forEach(link => link.classList.remove('active'));
+    }
+}
+
+window.addEventListener('scroll', updateActiveLink);
+window.addEventListener('load', updateActiveLink);
+window.addEventListener('hashchange', updateActiveLink);
+
+navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+    });
+});
+
