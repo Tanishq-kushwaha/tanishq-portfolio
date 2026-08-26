@@ -1,5 +1,10 @@
+/*
+    styles.css - main stylesheet for Tanishq's portfolio
+    - Use the CSS variables below to quickly tune colors, shadows, and spacing
+    - `data-theme="dark"` switches colors for dark mode (controlled in js/script.js)
+*/
 /* ============================================
-   ROOT VARIABLES (Improved Depth + Modern Accent)
+    ROOT VARIABLES (Improved Depth + Modern Accent)
 ============================================ */
 :root {
     --bg-main: #f8fafc;

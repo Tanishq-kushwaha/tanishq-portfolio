@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<!-- Tanishq's Portfolio - index.html
+    Sections: Home, About, Projects, Certifications, Contact
+    Scripts: js/data.js (content), js/script.js (UI & interactions)
+    Keep section IDs (`home`, `about`, `projects`, `certificates`, `contact`) for navigation.
+-->
+
+</head>
 
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="google-site-verification" content="hdczW-LOYtQgz2_vqH6aSem-Pdx83Hzbb-7zvYO3N9s" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tanishq's Developer Portfolio</title>
+
+<body>
+    <!-- Header / Navigation: edit nav links or theme button here. Hamburger toggles mobile nav (see js/script.js) -->
 
     <meta name="description"
         content="Tanishq Kushwaha - IT student at Government Polytechnic, Kanpur and NASSCOM certified Junior Software Developer. Passionate about building strong programming logic and exploring Cybersecurity fundamentals.">
@@ -99,6 +104,7 @@
     </header>
 
     <main>
+        <!-- Home / Hero: Typed name (`#typed-name`) and dynamic role (`#dynamic-role`) are driven by `js/script.js` -->
         <section id="home" class="hero">
             <div class="hero-content">
                 <h1>Hi, I'm <span id="typed-name" class="highlight"></span><span class="cursor">|</span></h1>
@@ -115,6 +121,7 @@
             </div>
         </section>
 
+        <!-- About: Update `.about-text` content and skill tags inside `.skills-container` -->
         <section id="about" class="about-section">
             <div class="about-content">
                 <h2 class="autoshow">About <span class="highlight">Me</span></h2>
@@ -133,6 +140,7 @@
             </div>
         </section>
 
+        <!-- Projects: Add/modify `.project-card` elements to update portfolio entries -->
         <section id="projects" class="projects-section">
            <div class="autoshow"> <h2>My <span class="highlight">Projects</span></h2></div>
             <div class="projects-grid">
@@ -178,6 +186,7 @@
             </div>
         </section>
 
+        <!-- Certifications: each `.cert-card` contains a certificate & verify link -->
         <section id="certificates" class="certificates-section">
             <h2 class="autoshow">My <span class="highlight">Certifications</span></h2>
             <div class="certificates-grid">
@@ -202,6 +211,7 @@
             </div>
         </section>
 
+        <!-- Contact: update contact links or the mailto address as needed -->
         <section id="contact" class="contact-section">
             <h2 class="autoshow">Get In <span class="highlight">Touch</span></h2>
             <p id="contact-text"></p>
@@ -231,6 +241,7 @@
         </div>
     </footer>
 
+    <!-- Data (content) and scripts: `js/data.js` holds textual content; `js/script.js` contains UI logic -->
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
 </body>

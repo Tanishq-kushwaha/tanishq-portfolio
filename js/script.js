@@ -1,3 +1,13 @@
+/* js/script.js
+   Handles UI interactions for the portfolio:
+   - sticky header on scroll
+   - theme toggle (light/dark) persisted in localStorage
+   - typed name + rotating role text in hero
+   - mobile hamburger toggle and nav link highlighting
+   - reveal animations for project/certificate cards (IntersectionObserver)
+*/
+
+// Sticky header: toggles `header.sticky` when the page is scrolled
 window.addEventListener("scroll", () => {
     const header = document.querySelector("header");
     header.classList.toggle("sticky", window.scrollY > 0);
@@ -5,9 +15,16 @@ window.addEventListener("scroll", () => {
 
 
 
+// Theme toggle elements: button and document body
 const themeBtn = document.getElementById('theme-toggle');
 const body = document.body;
 
+/**
+ * Set the theme for the page.
+ * - 'dark' applies `data-theme="dark"` to the <body>
+ * - otherwise removes the attribute for light theme
+ * Stores choice in localStorage so preference persists.
+ */
 const setTheme = (theme) => {
     if (theme === 'dark') {
         body.setAttribute('data-theme', 'dark');
@@ -20,16 +37,18 @@ const setTheme = (theme) => {
     }
 };
 
-// Agar koi data nahi hai, toh default 'light' select hoga
+// Load saved theme (fallback to 'light')
 const savedTheme = localStorage.getItem('theme') || 'light';
 setTheme(savedTheme);
 
+// Toggle theme on button click
 themeBtn.addEventListener('click', () => {
     const isCurrentlyDark = body.getAttribute('data-theme') === 'dark';
     setTheme(isCurrentlyDark ? 'light' : 'dark');
 });
 
 
+// Typed name effect in hero
 const nameElement = document.getElementById('typed-name');
 const myName = "Tanishq Kushwaha";
 let nameIndex = 0;
@@ -40,10 +59,12 @@ function typeName() {
         nameIndex++;
         setTimeout(typeName, 120);
     } else {
+        // Start role rotation after name is typed
         setTimeout(startDynamicRoles, 500);
     }
 }
 
+// Rotating role text under the name (type + delete animation)
 const roleElement = document.getElementById('dynamic-role');
 const roles = ["Junior Software Developer", "Frontend Developer", "Problem Solver"];
 let roleIndex = 0;
@@ -64,21 +85,23 @@ function startDynamicRoles() {
     let typeSpeed = isDeleting ? 50 : 100;
 
     if (!isDeleting && charIndex === currentRole.length) {
-        typeSpeed = 2000;
+        typeSpeed = 2000; // pause before deleting
         isDeleting = true;
     } else if (isDeleting && charIndex === 0) {
         isDeleting = false;
         roleIndex = (roleIndex + 1) % roles.length;
-        typeSpeed = 500;
+        typeSpeed = 500; // small pause before typing next
     }
 
     setTimeout(startDynamicRoles, typeSpeed);
 }
 
+// Kick off hero typing after page load
 window.onload = () => {
     setTimeout(typeName, 500);
 };
 
+// Mobile hamburger toggle: opens/closes the right-hand nav menu
 const hamburger = document.getElementById('hamburger');
 const navMenu = document.getElementById('nav-menu');
 
@@ -87,7 +110,7 @@ hamburger.addEventListener('click', () => {
     navMenu.classList.toggle('active');
 });
 
-
+// Close mobile nav when any nav link is clicked
 document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', () => {
         hamburger.classList.remove('active');
