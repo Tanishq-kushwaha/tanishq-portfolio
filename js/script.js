@@ -134,3 +134,39 @@ navLinks.forEach(link => {
         link.classList.add('active');
     });
 });
+
+
+/* Reveal scroll-up animation for project + cert cards */
+(function () {
+    const revealSelector = '.project-card, .cert-card';
+    const revealElements = document.querySelectorAll(revealSelector);
+    if (!revealElements.length) return;
+
+    // Respect reduced motion
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        revealElements.forEach(el => el.classList.add('reveal-card', 'visible'));
+        return;
+    }
+
+    // Prepare elements with initial hidden state and staggered delays
+    revealElements.forEach((el, i) => {
+        el.classList.add('reveal-card');
+        el.style.transitionDelay = `${i * 120}ms`;
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            } else {
+                entry.target.classList.remove('visible');
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: '0px 0px -80px 0px',
+        threshold: 0.12
+    });
+
+    revealElements.forEach(el => observer.observe(el));
+})();

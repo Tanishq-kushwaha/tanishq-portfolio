@@ -660,3 +660,28 @@ p {
     animation: appear 5s linear;
     animation-timeline: view();
 } */
+
+/* ============================================
+   Reveal / Scroll-up animation for cards
+   Applies to project and certificate cards with a nice stagger
+============================================ */
+.reveal-card {
+    opacity: 0;
+    transform: translateY(24px) scale(0.985);
+    transition: opacity 620ms cubic-bezier(.16,.84,.31,1), transform 620ms cubic-bezier(.16,.84,.31,1);
+    will-change: opacity, transform;
+}
+
+.reveal-card.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .reveal-card {
+        transition: none;
+        opacity: 1;
+        transform: none;
+    }
+}
