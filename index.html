@@ -1,23 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- Tanishq's Portfolio - index.html
-    Sections: Home, About, Projects, Certifications, Contact
-    Scripts: js/data.js (content), js/script.js (UI & interactions)
-    Keep section IDs (`home`, `about`, `projects`, `certificates`, `contact`) for navigation.
--->
-
-</head>
-
-
-
-<body>
-    <!-- Header / Navigation: edit nav links or theme button here. Hamburger toggles mobile nav (see js/script.js) -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="hdczW-LOYtQgz2_vqH6aSem-Pdx83Hzbb-7zvYO3N9s" />
+    <title>Tanishq's Developer Portfolio</title>
 
     <meta name="description"
         content="Tanishq Kushwaha - IT student at Government Polytechnic, Kanpur and NASSCOM certified Junior Software Developer. Passionate about building strong programming logic and exploring Cybersecurity fundamentals.">
     <meta name="keywords"
-        content="Tanishq Kushwaha Portfolio, Frontend Developer Kanpur, Junior Software Developer, Cybersecurity Tanishq, Logic Builder, Frontend Developer , Tanishk Kushwaha, Tanish Kushwaha, Tanishk, Tanish, Tanishq Portfolio, Junior Software Developer Kanpur">
+        content="Tanishq Kushwaha Portfolio, Frontend Developer Kanpur, Junior Software Developer, Cybersecurity Tanishq, Logic Builder, Frontend Developer, Tanishk Kushwaha, Tanish Kushwaha, Tanishk, Tanish, Tanishq Portfolio, Junior Software Developer Kanpur">
     <meta name="author" content="Tanishq Kushwaha">
 
     <meta property="og:type" content="website">
@@ -40,6 +33,7 @@
         rel="stylesheet">
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="stylesheet" href="styles.css">
+
     <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -74,176 +68,178 @@
     "Web Development"
   ]
 }
-</script>
+    </script>
 </head>
 
 
 
 
+    <body>
+        <header>
+            <nav>
+                <div class="left">Tani$hq.</div>
 
-<body>
-    <header>
-        <nav>
-            <div class="left">Tani$hq.</div>
+                <ul class="nav-links" id="nav-menu">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#certificates">Certifications</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><button id="theme-toggle" class="theme-btn">🌙 Dark Mode</button></li>
+                </ul>
 
-            <ul class="nav-links" id="nav-menu">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#certificates">Certifications</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><button id="theme-toggle" class="theme-btn">🌙 Dark Mode</button></li>
-            </ul>
-
-            <div class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </nav>
-    </header>
-
-    <main>
-        <!-- Home / Hero: Typed name (`#typed-name`) and dynamic role (`#dynamic-role`) are driven by `js/script.js` -->
-        <section id="home" class="hero">
-            <div class="hero-content">
-                <h1>Hi, I'm <span id="typed-name" class="highlight"></span><span class="cursor">|</span></h1>
-                <p id="dynamic-role" class="dynamic-text"></p>
-
-                <div class="hero-buttons">
-                    <a href="#projects" class="btn">View My Projects</a>
-                    <a href="#contact" class="btn outline">Contact Me</a>
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
-            </div>
-            <div class="hero-image">
-                <img src="assets/photo1.webp" alt="Tanishq Kushwaha - Junior Software Developer Kanpur"
-                    fetchpriority="high" width="300" height="300">
-            </div>
-        </section>
+            </nav>
+        </header>
 
-        <!-- About: Update `.about-text` content and skill tags inside `.skills-container` -->
-        <section id="about" class="about-section">
-            <div class="about-content">
-                <h2 class="autoshow">About <span class="highlight">Me</span></h2>
-                <p class="about-text"></p>
+        <main>
+            <!-- Home / Hero: Typed name (`#typed-name`) and dynamic role (`#dynamic-role`) are driven by `js/script.js` -->
+            <section id="home" class="hero">
+                <div class="hero-content">
+                    <h1>Hi, I'm <span id="typed-name" class="highlight"></span><span class="cursor">|</span></h1>
+                    <p id="dynamic-role" class="dynamic-text"></p>
 
-                <div class="skills-container">
-                    <span class="skill-tag">HTML5</span>
-                    <span class="skill-tag">CSS3</span>
-                    <span class="skill-tag">JavaScript</span>
-                    <span class="skill-tag">Bootstrap</span>
-                    <span class="skill-tag">MS. Office</span>
-                    <span class="skill-tag">Git & GitHub</span>
-                    <span class="skill-tag">C language</span>
-                    <span class="skill-tag">C++</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Projects: Add/modify `.project-card` elements to update portfolio entries -->
-        <section id="projects" class="projects-section">
-           <div class="autoshow"> <h2>My <span class="highlight">Projects</span></h2></div>
-            <div class="projects-grid">
-                <div class="project-card">
-                    <h3>BTEUP Result Link Generator</h3>
-                    <p>A lightweight utility hosted on GitHub Pages to generate and manage result links efficiently.</p>
-                    <div class="project-links">
-                        <a href="https://tanishq-kushwaha.github.io/BTE-Result-Generator/" class="btn-small">Live
-                            Demo</a>
-                        <a href="https://github.com/Tanishq-kushwaha/BTE-Result-Generator"
-                            class="btn-small outline">GitHub</a>
+                    <div class="hero-buttons">
+                        <a href="#projects" class="btn">View My Projects</a>
+                        <a href="#contact" class="btn outline">Contact Me</a>
                     </div>
                 </div>
-                <div class="project-card">
-                    <h3>Cyber-Safe Password Analyzer</h3>
-                    <p>A security tool built with HTML5, CSS3 and JavaScript to analyze and strengthen password
-                        security.
-                    </p>
-                    <div class="project-links">
-                        <a href="https://tanishq-kushwaha.github.io/Cyber-Safe-Password-Analyzer/"
-                            class="btn-small">Live
-                            Demo</a>
-                        <a href="https://github.com/Tanishq-kushwaha/Cyber-Safe-Password-Analyzer"
-                            class="btn-small outline">GitHub</a>
+                <div class="hero-image">
+                    <img src="assets/photo1.webp" alt="Tanishq Kushwaha - Junior Software Developer Kanpur"
+                        fetchpriority="high" width="300" height="300">
+                </div>
+            </section>
+
+            <!-- About: Update `.about-text` content and skill tags inside `.skills-container` -->
+            <section id="about" class="about-section">
+                <div class="about-content">
+                    <h2 class="autoshow">About <span class="highlight">Me</span></h2>
+                    <p class="about-text"></p>
+
+                    <div class="skills-container">
+                        <span class="skill-tag">HTML5</span>
+                        <span class="skill-tag">CSS3</span>
+                        <span class="skill-tag">JavaScript</span>
+                        <span class="skill-tag">Bootstrap</span>
+                        <span class="skill-tag">MS. Office</span>
+                        <span class="skill-tag">Git & GitHub</span>
+                        <span class="skill-tag">C language</span>
+                        <span class="skill-tag">C++</span>
                     </div>
                 </div>
-                <div class="project-card">
-                    <h3>The Online C Runner</h3>
-                    <p>
-                        A responsive online C compiler built with HTML, CSS, Bootstrap and
-                        Vanilla JavaScript. Users can write, compile and execute C programs
-                        directly in the browser using the Wandbox Compiler API.
-                    </p>
-                    <div class="project-links">
-                        <a href="https://tanishq-kushwaha.github.io/The-Online-C-Runner/" class="btn-small">
-                            Live Demo
-                        </a>
-                        <a href="https://github.com/Tanishq-kushwaha/The-Online-C-Runner" class="btn-small outline">
-                            GitHub
-                        </a>
+            </section>
+
+            <!-- Projects: Add/modify `.project-card` elements to update portfolio entries -->
+            <section id="projects" class="projects-section">
+                <div class="autoshow">
+                    <h2>My <span class="highlight">Projects</span></h2>
+                </div>
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <h3>BTEUP Result Link Generator</h3>
+                        <p>A lightweight utility hosted on GitHub Pages to generate and manage result links efficiently.
+                        </p>
+                        <div class="project-links">
+                            <a href="https://tanishq-kushwaha.github.io/BTE-Result-Generator/" class="btn-small">Live
+                                Demo</a>
+                            <a href="https://github.com/Tanishq-kushwaha/BTE-Result-Generator"
+                                class="btn-small outline">GitHub</a>
+                        </div>
+                    </div>
+                    <div class="project-card">
+                        <h3>Cyber-Safe Password Analyzer</h3>
+                        <p>A security tool built with HTML5, CSS3 and JavaScript to analyze and strengthen password
+                            security.
+                        </p>
+                        <div class="project-links">
+                            <a href="https://tanishq-kushwaha.github.io/Cyber-Safe-Password-Analyzer/"
+                                class="btn-small">Live
+                                Demo</a>
+                            <a href="https://github.com/Tanishq-kushwaha/Cyber-Safe-Password-Analyzer"
+                                class="btn-small outline">GitHub</a>
+                        </div>
+                    </div>
+                    <div class="project-card">
+                        <h3>The Online C Runner</h3>
+                        <p>
+                            A responsive online C compiler built with HTML, CSS, Bootstrap and
+                            Vanilla JavaScript. Users can write, compile and execute C programs
+                            directly in the browser using the Wandbox Compiler API.
+                        </p>
+                        <div class="project-links">
+                            <a href="https://tanishq-kushwaha.github.io/The-Online-C-Runner/" class="btn-small">
+                                Live Demo
+                            </a>
+                            <a href="https://github.com/Tanishq-kushwaha/The-Online-C-Runner" class="btn-small outline">
+                                GitHub
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Certifications: each `.cert-card` contains a certificate & verify link -->
-        <section id="certificates" class="certificates-section">
-            <h2 class="autoshow">My <span class="highlight">Certifications</span></h2>
-            <div class="certificates-grid">
-                <div class="cert-card">
-                    <h3>Foundations of Cybersecurity</h3>
-                    <p>Google / Coursera</p>
-                    <a href="https://www.coursera.org/account/accomplishments/verify/PCQJQP65PTPO"
-                        class="btn-small outline mt-15">Verify</a>
+            <!-- Certifications: each `.cert-card` contains a certificate & verify link -->
+            <section id="certificates" class="certificates-section">
+                <h2 class="autoshow">My <span class="highlight">Certifications</span></h2>
+                <div class="certificates-grid">
+                    <div class="cert-card">
+                        <h3>Foundations of Cybersecurity</h3>
+                        <p>Google / Coursera</p>
+                        <a href="https://www.coursera.org/account/accomplishments/verify/PCQJQP65PTPO"
+                            class="btn-small outline mt-15">Verify</a>
+                    </div>
+                    <div class="cert-card">
+                        <h3>Junior Software Developer</h3>
+                        <p>Skill India / NCVET</p>
+                        <a href="https://www.linkedin.com/in/tanishq-kushwaha-846b05375/"
+                            class="btn-small outline mt-15">Verify on LinkedIn</a>
+                    </div>
+                    <div class="cert-card">
+                        <h3>Course on Computer Concepts</h3>
+                        <p>NIELIT</p>
+                        <a href="https://www.linkedin.com/in/tanishq-kushwaha-846b05375/"
+                            class="btn-small outline mt-15">Verify on LinkedIn</a>
+                    </div>
                 </div>
-                <div class="cert-card">
-                    <h3>Junior Software Developer</h3>
-                    <p>Skill India / NCVET</p>
-                    <a href="https://www.linkedin.com/in/tanishq-kushwaha-846b05375/"
-                        class="btn-small outline mt-15">Verify on LinkedIn</a>
+            </section>
+
+            <!-- Contact: update contact links or the mailto address as needed -->
+            <section id="contact" class="contact-section">
+                <h2 class="autoshow">Get In <span class="highlight">Touch</span></h2>
+                <p id="contact-text"></p>
+                <div class="contact-links">
+                    <a href="mailto:tanishqkushwaha09@gmail.com" class="btn">Say Hello</a>
+                    <a href="https://www.linkedin.com/in/tanishq-kushwaha-846b05375/" class="btn outline">LinkedIn</a>
+                    <a href="https://github.com/Tanishq-kushwaha" class="btn outline">GitHub</a>
+                    <a href="https://www.instagram.com/tanishx.kushwaha/" class="btn outline">Instagram</a>
                 </div>
-                <div class="cert-card">
-                    <h3>Course on Computer Concepts</h3>
-                    <p>NIELIT</p>
-                    <a href="https://www.linkedin.com/in/tanishq-kushwaha-846b05375/"
-                        class="btn-small outline mt-15">Verify on LinkedIn</a>
+            </section>
+        </main>
+        <footer class="premium-footer">
+            <div class="footer-container">
+                <div class="footer-brand">
+                    <span class="logo">Tani$hq<span class="highlight">.</span></span>
+                    <p class="tagline">Engineering Logic. Building Dominance.</p>
+                </div>
+
+                <div class="footer-copyright">
+                    <p>&copy; 2026 All Rights Reserved by <span class="highlight-name">Tanishq Kushwaha</span></p>
+                </div>
+
+                <div class="footer-status">
+                    <div class="status-indicator"></div>
+                    <span>Available for Elite Projects</span>
                 </div>
             </div>
-        </section>
+        </footer>
 
-        <!-- Contact: update contact links or the mailto address as needed -->
-        <section id="contact" class="contact-section">
-            <h2 class="autoshow">Get In <span class="highlight">Touch</span></h2>
-            <p id="contact-text"></p>
-            <div class="contact-links">
-                <a href="mailto:tanishqkushwaha09@gmail.com" class="btn">Say Hello</a>
-                <a href="https://www.linkedin.com/in/tanishq-kushwaha-846b05375/" class="btn outline">LinkedIn</a>
-                <a href="https://github.com/Tanishq-kushwaha" class="btn outline">GitHub</a>
-                <a href="https://www.instagram.com/tanishx.kushwaha/" class="btn outline">Instagram</a>
-            </div>
-        </section>
-    </main>
-    <footer class="premium-footer">
-        <div class="footer-container">
-            <div class="footer-brand">
-                <span class="logo">Tani$hq<span class="highlight">.</span></span>
-                <p class="tagline">Engineering Logic. Building Dominance.</p>
-            </div>
-
-            <div class="footer-copyright">
-                <p>&copy; 2026 All Rights Reserved by <span class="highlight-name">Tanishq Kushwaha</span></p>
-            </div>
-
-            <div class="footer-status">
-                <div class="status-indicator"></div>
-                <span>Available for Elite Projects</span>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Data (content) and scripts: `js/data.js` holds textual content; `js/script.js` contains UI logic -->
-    <script src="js/data.js"></script>
-    <script src="js/script.js"></script>
-</body>
+        <!-- Data (content) and scripts: `js/data.js` holds textual content; `js/script.js` contains UI logic -->
+        <script src="js/data.js"></script>
+        <script src="js/script.js"></script>
+    </body>
 
 </html>
