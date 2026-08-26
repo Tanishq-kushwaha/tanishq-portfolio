@@ -646,7 +646,7 @@ p {
     }
 }
 
-@keyframes appear {
+/* @keyframes appear {
     from{
       opacity: 0;
       scale: 0.5;
@@ -656,3 +656,7 @@ p {
        scale: 1;
     }
 }
+.block{
+    animation: appear 5s linear;
+    animation-timeline: view();
+} */
