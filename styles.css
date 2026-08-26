@@ -303,7 +303,7 @@ nav {
 .about-section,
 .certificates-section,
 .contact-section {
-    padding: 90px 20px;
+    padding: 45px 20px;
     background-color: var(--bg-section);
     text-align: center;
 }
@@ -651,20 +651,6 @@ p {
     }
 }
 
-/* @keyframes appear {
-    from{
-      opacity: 0;
-      scale: 0.5;
-    }
-    to{
-       opacity: 1;
-       scale: 1;
-    }
-}
-.block{
-    animation: appear 5s linear;
-    animation-timeline: view();
-} */
 
 /* ============================================
    Reveal / Scroll-up animation for cards
