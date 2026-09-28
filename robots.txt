@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
+
 Sitemap: https://tanishq-kushwaha.github.io/tanishq-portfolio/sitemap.xml
