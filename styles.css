@@ -114,6 +114,16 @@ a {
     position: absolute;
     inset: 0;
     overflow: hidden;
+    /* Light theme: subtle dot grid — flat backgrounds ko texture deta hai */
+    background-image: radial-gradient(circle,
+            rgba(99, 102, 241, 0.07) 1px,
+            transparent 1.5px);
+    background-size: 32px 32px;
+}
+
+/* Dark theme mein grid nahi — stars already depth de rahe hain */
+[data-theme="dark"] .bg-gradient {
+    background-image: none;
 }
 
 /* Light aurora — do soft blobs jo slowly drift karte hain */
@@ -161,6 +171,73 @@ a {
     width: 100%;
     height: 100%;
     display: block;
+}
+
+/* ============================================
+   Light-theme-only: extra aurora depth
+   Dark theme apna nebula use karta hai, ye layers hidden rahenge
+============================================ */
+
+/* Top-right warm pink corner glow — soft "sunrise" feel */
+.bg-layer::before {
+    content: "";
+    position: absolute;
+    top: -15%;
+    right: -15%;
+    width: 60vmax;
+    height: 60vmax;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+            rgba(255, 205, 230, 0.28) 0%,
+            rgba(255, 215, 235, 0.10) 40%,
+            transparent 70%);
+    pointer-events: none;
+    animation: cornerGlowPulse 10s ease-in-out infinite alternate;
+}
+
+@keyframes cornerGlowPulse {
+    from {
+        opacity: 0.65;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+}
+
+/* Bottom-left cyan aurora blob — teesra color, spectrum complete */
+.bg-layer::after {
+    content: "";
+    position: absolute;
+    bottom: -25%;
+    left: -18%;
+    width: 60vmax;
+    height: 60vmax;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+            rgba(140, 220, 220, 0.24) 0%,
+            rgba(140, 220, 220, 0.07) 45%,
+            transparent 70%);
+    pointer-events: none;
+    animation: auroraDriftC 58s ease-in-out infinite alternate;
+}
+
+@keyframes auroraDriftC {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(5%, -4%) scale(1.10);
+    }
+}
+
+/* Dark theme mein in dono ko hide karo — dark ke paas apna nebula hai */
+[data-theme="dark"] .bg-layer::before,
+[data-theme="dark"] .bg-layer::after {
+    display: none;
 }
 
 @keyframes auroraDriftA {

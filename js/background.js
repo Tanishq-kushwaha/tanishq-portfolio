@@ -35,12 +35,12 @@
             driftRange: 0.03                 // pixels/frame slow horizontal drift
         },
         light: {
-            dustColor: '120, 140, 220',      // soft lavender-blue
-            baseDustCount: 45,
-            dustRadiusMin: 1.0,
-            dustRadiusMax: 3.0,
-            driftSpeedMin: 0.05,
-            driftSpeedMax: 0.18
+            dustColor: '130, 150, 235',      // thoda richer blue-purple
+            baseDustCount: 70,                // 45 se badhaya — zyada depth
+            dustRadiusMin: 0.8,               // chhote particles bhi
+            dustRadiusMax: 3.2,               // bade soft glows tak
+            driftSpeedMin: 0.04,              // drift thoda slow = zyada elegant
+            driftSpeedMax: 0.15
         }
     };
 
