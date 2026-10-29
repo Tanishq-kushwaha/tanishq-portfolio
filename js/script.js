@@ -64,6 +64,11 @@
             themeBtn.textContent = '🌙 Dark Mode';
             storage.set('theme', 'light');
         }
+
+        // Theme change hone par background ke colors update karo
+        if (window.PortfolioBackground && window.PortfolioBackground.updateTheme) {
+            window.PortfolioBackground.updateTheme(theme);
+        }
     };
 
     // Page load pe saved theme apply karo

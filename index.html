@@ -73,6 +73,7 @@
 </head>
 
 <body>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
     <!-- Scroll progress (GSAP se control hota hai) -->
     <div class="scroll-progress" aria-hidden="true"></div>
 
@@ -250,11 +251,10 @@
         </div>
     </footer>
 
-    <!-- GSAP Core + ScrollTrigger only (best for portfolio) -->
+
+    <script src="js/background.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
-
-    
     <script src="js/data.js" defer></script>
     <script src="js/script.js" defer></script>
 </body>
