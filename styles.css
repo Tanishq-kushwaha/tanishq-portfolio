@@ -36,6 +36,9 @@
     --sticky-shadow: rgba(0, 0, 0, 0.08);
     --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     --card-hover-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.28);
+    --section-bg: rgba(255, 255, 255, 0.40);
+    --section-bg-soft: rgba(255, 255, 255, 0.15);
+    --section-bg-footer: rgba(255, 255, 255, 0.55);
 }
 
 [data-theme="dark"] {
@@ -51,6 +54,9 @@
     --sticky-shadow: rgba(139, 92, 246, 0.25);
     --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     --card-hover-shadow: 0 20px 40px -12px rgba(139, 92, 246, 0.35);
+    --section-bg: rgba(15, 18, 30, 0.42);
+    --section-bg-soft: rgba(10, 10, 18, 0.18);
+    --section-bg-footer: rgba(15, 18, 30, 0.55);
 }
 
 /* ============================================
@@ -99,7 +105,8 @@ a {
     z-index: -1;
     pointer-events: none;
     overflow: hidden;
-    background-color: var(--bg-main); /* canvas fail ho to bhi base color dikhe */
+    background-color: var(--bg-main);
+    /* canvas fail ho to bhi base color dikhe */
     transition: background-color 0.5s ease;
 }
 
@@ -157,13 +164,23 @@ a {
 }
 
 @keyframes auroraDriftA {
-    from { transform: translate(0, 0) scale(1); }
-    to   { transform: translate(6%, 4%) scale(1.10); }
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(6%, 4%) scale(1.10);
+    }
 }
 
 @keyframes auroraDriftB {
-    from { transform: translate(0, 0) scale(1); }
-    to   { transform: translate(-5%, -3%) scale(1.08); }
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(-5%, -3%) scale(1.08);
+    }
 }
 
 /* ============================================
@@ -284,8 +301,15 @@ nav {
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: 0; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
 }
 
 .dynamic-text {
@@ -305,7 +329,8 @@ nav {
     margin: 0 auto;
     padding: 100px 20px 60px;
     gap: 40px;
-    perspective: 1200px; /* GSAP tilt ke liye 3D space */
+    perspective: 1200px;
+    /* GSAP tilt ke liye 3D space */
 }
 
 .hero-content {
@@ -368,8 +393,15 @@ nav {
 }
 
 @keyframes heroGlowPulse {
-    from { transform: scale(0.95); opacity: 0.7; }
-    to   { transform: scale(1.05); opacity: 1;   }
+    from {
+        transform: scale(0.95);
+        opacity: 0.7;
+    }
+
+    to {
+        transform: scale(1.05);
+        opacity: 1;
+    }
 }
 
 /* Orbital ring — image ke around ghoomta hua dot */
@@ -397,8 +429,13 @@ nav {
 }
 
 @keyframes orbitSpin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ============================================
@@ -453,14 +490,21 @@ nav {
 .certificates-section,
 .contact-section {
     padding: 45px 20px;
-    background-color: var(--bg-section);
+    /* Pehle solid --bg-section tha — cosmic bg block ho raha tha.
+       Ab translucent — canvas + aurora through dikhte hain. */
+    background-color: var(--section-bg);
     text-align: center;
+    position: relative;
+    transition: background-color 0.4s ease;
 }
 
 .projects-section {
     padding: 90px 20px;
-    background-color: var(--bg-main);
+    /* Projects section aur bhi halka — cosmic zyada visible */
+    background-color: var(--section-bg-soft);
     text-align: center;
+    position: relative;
+    transition: background-color 0.4s ease;
 }
 
 h2 {
@@ -535,8 +579,8 @@ p {
     width: 340px;
     text-align: left;
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.35s ease,
-                border-color 0.35s ease;
+        box-shadow 0.35s ease,
+        border-color 0.35s ease;
     border: 1px solid var(--border);
     box-shadow: var(--card-shadow);
     position: relative;
@@ -616,12 +660,13 @@ p {
    10. FOOTER
 ============================================ */
 .premium-footer {
-    background-color: var(--bg-section);
+    background-color: var(--section-bg-footer);
     border-top: 1px solid var(--border);
     padding: 60px 20px 30px;
     margin-top: 80px;
     position: relative;
     overflow: hidden;
+    transition: background-color 0.4s ease;
 }
 
 .footer-container {
@@ -680,9 +725,20 @@ p {
 }
 
 @keyframes pulse {
-    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-    70%  { transform: scale(1);    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
 }
 
 .footer-status span {
@@ -695,7 +751,9 @@ p {
    11. RESPONSIVE
 ============================================ */
 @media (max-width: 768px) {
-    .hamburger { display: flex; }
+    .hamburger {
+        display: flex;
+    }
 
     nav {
         flex-direction: row;
@@ -718,7 +776,9 @@ p {
         z-index: 1050;
     }
 
-    .nav-links.active { right: 0; }
+    .nav-links.active {
+        right: 0;
+    }
 
     .hero {
         flex-direction: column-reverse;
@@ -728,7 +788,9 @@ p {
         gap: 30px;
     }
 
-    .hero-image { margin-bottom: 10px; }
+    .hero-image {
+        margin-bottom: 10px;
+    }
 
     .hero-image img {
         width: 240px;
@@ -736,16 +798,33 @@ p {
     }
 
     /* Chhoti screen par orbit ka radius kam */
-    .hero-orbit { inset: -20px; }
+    .hero-orbit {
+        inset: -20px;
+    }
 
-    .hero-buttons { justify-content: center; }
+    .hero-buttons {
+        justify-content: center;
+    }
 
-    .hero h1 { font-size: 2.4rem; }
-    .dynamic-text { font-size: 1.15rem; }
+    .hero h1 {
+        font-size: 2.4rem;
+    }
 
-    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 6px); }
-    .hamburger.active span:nth-child(2) { opacity: 0; }
-    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -6px); }
+    .dynamic-text {
+        font-size: 1.15rem;
+    }
+
+    .hamburger.active span:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 6px);
+    }
+
+    .hamburger.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger.active span:nth-child(3) {
+        transform: rotate(-45deg) translate(5px, -6px);
+    }
 
     .project-card,
     .cert-card {
@@ -758,12 +837,16 @@ p {
         text-align: center;
     }
 
-    .footer-status { order: -1; }
+    .footer-status {
+        order: -1;
+    }
 }
 
 /* Bahut chhoti screen par orbit hide */
 @media (max-width: 400px) {
-    .hero-orbit { display: none; }
+    .hero-orbit {
+        display: none;
+    }
 }
 
 /* ============================================
@@ -777,8 +860,15 @@ p {
 }
 
 @keyframes text-appear {
-    from { opacity: 0; transform: translateY(80px); }
-    to   { opacity: 1; transform: translateY(0);    }
+    from {
+        opacity: 0;
+        transform: translateY(80px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* IntersectionObserver fallback (jab GSAP available na ho) */
@@ -786,7 +876,7 @@ p {
     opacity: 0;
     transform: translateY(24px) scale(0.985);
     transition: opacity 620ms cubic-bezier(.16, .84, .31, 1),
-                transform 620ms cubic-bezier(.16, .84, .31, 1);
+        transform 620ms cubic-bezier(.16, .84, .31, 1);
     will-change: opacity, transform;
 }
 
