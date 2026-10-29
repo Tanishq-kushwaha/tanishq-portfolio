@@ -1,10 +1,14 @@
 /*
-    styles.css - main stylesheet for Tanishq's portfolio
-    - Use the CSS variables below to quickly tune colors, shadows, and spacing
-    - `data-theme="dark"` switches colors for dark mode (controlled in js/script.js)
+    styles.css – Tanishq's Portfolio
+    --------------------------------
+    - CSS variables se colors / shadows easily change kar sakte ho
+    - data-theme="dark" se dark mode (JS control karta hai)
+    - GSAP entrance animations handle karta hai
+    - .autoshow CSS scroll-timeline fallback hai (GSAP load hone pe JS hata deta hai)
 */
+
 /* ============================================
-    ROOT VARIABLES (Improved Depth + Modern Accent)
+   1. ROOT VARIABLES (Light + Dark)
 ============================================ */
 :root {
     --bg-main: #f8fafc;
@@ -12,7 +16,7 @@
     --bg-card: #f1f5f9;
     --text-main: #0f172a;
     --text-muted: #334155;
-    --accent: #6366f1;              /* Brighter modern indigo */
+    --accent: #6366f1;
     --accent-hover: #4f46e5;
     --border: #e2e8f0;
     --nav-bg: rgba(248, 250, 252, 0.9);
@@ -37,7 +41,7 @@
 }
 
 /* ============================================
-   GLOBAL RESET & BASE
+   2. GLOBAL RESET & BASE
 ============================================ */
 * {
     margin: 0;
@@ -60,8 +64,13 @@ a {
     color: var(--text-main);
 }
 
+/* Fixed header ke liye scroll padding */
+html {
+    scroll-padding-top: 90px;
+}
+
 /* ============================================
-   HEADER / NAVBAR
+   3. HEADER / NAVBAR
 ============================================ */
 header {
     background-color: var(--nav-bg);
@@ -117,7 +126,7 @@ nav {
     color: var(--accent);
 }
 
-/* Active nav link styling */
+/* Active nav link */
 .nav-links li a.active {
     color: var(--accent);
     font-weight: 700;
@@ -153,6 +162,7 @@ nav {
     color: #ffffff;
 }
 
+/* Hamburger (mobile) */
 .hamburger {
     display: none;
     cursor: pointer;
@@ -171,7 +181,7 @@ nav {
 }
 
 /* ============================================
-   HERO SECTION (Major Upgrade)
+   4. HERO SECTION
 ============================================ */
 .cursor {
     color: var(--accent);
@@ -180,7 +190,7 @@ nav {
 
 @keyframes blink {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+    50%      { opacity: 0; }
 }
 
 .dynamic-text {
@@ -200,6 +210,7 @@ nav {
     margin: 0 auto;
     padding: 100px 20px 60px;
     gap: 40px;
+    perspective: 1200px; /* GSAP tilt ke liye 3D space */
 }
 
 .hero-content {
@@ -223,7 +234,7 @@ nav {
     flex-wrap: wrap;
 }
 
-/* Hero Image - Premium Look */
+/* Hero Image */
 .hero-image {
     position: relative;
     flex-shrink: 0;
@@ -235,7 +246,7 @@ nav {
     object-fit: cover;
     border-radius: 50%;
     border: 4px solid var(--accent);
-    box-shadow: 
+    box-shadow:
         0 0 0 10px var(--bg-main),
         0 0 50px rgba(99, 102, 241, 0.35);
     transition: transform 0.4s ease, box-shadow 0.4s ease;
@@ -243,12 +254,12 @@ nav {
 
 .hero-image img:hover {
     transform: scale(1.04);
-    box-shadow: 
+    box-shadow:
         0 0 0 10px var(--bg-main),
         0 0 60px rgba(99, 102, 241, 0.5);
 }
 
-/* Soft glow ring behind photo */
+/* Soft glow behind photo */
 .hero-image::before {
     content: "";
     position: absolute;
@@ -259,9 +270,10 @@ nav {
 }
 
 /* ============================================
-   BUTTONS
+   5. BUTTONS
 ============================================ */
-.btn, .btn-small {
+.btn,
+.btn-small {
     padding: 12px 28px;
     background-color: var(--accent);
     color: #ffffff;
@@ -279,26 +291,29 @@ nav {
     font-size: 0.9rem;
 }
 
-.btn:hover, .btn-small:hover {
+.btn:hover,
+.btn-small:hover {
     background-color: var(--accent-hover);
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
 }
 
-.btn.outline, .btn-small.outline {
+.btn.outline,
+.btn-small.outline {
     background-color: transparent;
     color: var(--accent);
     border: 1.5px solid var(--accent);
 }
 
-.btn.outline:hover, .btn-small.outline:hover {
+.btn.outline:hover,
+.btn-small.outline:hover {
     background-color: var(--accent);
     color: #ffffff;
     transform: translateY(-3px);
 }
 
 /* ============================================
-   SECTIONS COMMON
+   6. SECTIONS COMMON
 ============================================ */
 .about-section,
 .certificates-section,
@@ -334,7 +349,7 @@ p {
 }
 
 /* ============================================
-   SKILLS SECTION (Major Upgrade)
+   7. SKILLS
 ============================================ */
 .skills-container {
     display: flex;
@@ -357,7 +372,6 @@ p {
     box-shadow: var(--card-shadow);
 }
 
-/* Hover effect for skills */
 .skill-tag:hover {
     background-color: var(--accent);
     color: #ffffff;
@@ -367,7 +381,7 @@ p {
 }
 
 /* ============================================
-   PROJECT & CERTIFICATE CARDS (Major Upgrade)
+   8. PROJECT & CERTIFICATE CARDS
 ============================================ */
 .projects-grid,
 .certificates-grid {
@@ -398,7 +412,7 @@ p {
     width: 310px;
 }
 
-/* Premium hover effect */
+/* Premium hover */
 .project-card:hover,
 .cert-card:hover {
     transform: translateY(-10px) scale(1.02);
@@ -406,7 +420,7 @@ p {
     border-color: var(--accent);
 }
 
-/* Subtle top accent line on hover */
+/* Top accent line on hover */
 .project-card::before,
 .cert-card::before {
     content: "";
@@ -465,7 +479,7 @@ p {
 }
 
 /* ============================================
-   FOOTER
+   9. FOOTER
 ============================================ */
 .premium-footer {
     background-color: var(--bg-section);
@@ -532,9 +546,18 @@ p {
 }
 
 @keyframes pulse {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
 }
 
 .footer-status span {
@@ -544,7 +567,7 @@ p {
 }
 
 /* ============================================
-   RESPONSIVE (Mobile)
+   10. RESPONSIVE (Mobile ≤ 768px)
 ============================================ */
 @media (max-width: 768px) {
     .hamburger {
@@ -605,14 +628,13 @@ p {
         font-size: 1.15rem;
     }
 
+    /* Hamburger → X */
     .hamburger.active span:nth-child(1) {
         transform: rotate(45deg) translate(5px, 6px);
     }
-
     .hamburger.active span:nth-child(2) {
         opacity: 0;
     }
-
     .hamburger.active span:nth-child(3) {
         transform: rotate(-45deg) translate(5px, -6px);
     }
@@ -633,13 +655,16 @@ p {
     }
 }
 
+/* ============================================
+   11. CSS FALLBACK ANIMATIONS
+   (GSAP load hone pe JS inhe hata deta hai)
+============================================ */
 .autoshow {
     animation: text-appear both;
     animation-timeline: view();
     animation-range: entry 15% cover 40%;
 }
 
-/* for Heading text  */
 @keyframes text-appear {
     from {
         opacity: 0;
@@ -651,15 +676,12 @@ p {
     }
 }
 
-
-/* ============================================
-   Reveal / Scroll-up animation for cards
-   Applies to project and certificate cards with a nice stagger
-============================================ */
+/* IntersectionObserver fallback cards */
 .reveal-card {
     opacity: 0;
     transform: translateY(24px) scale(0.985);
-    transition: opacity 620ms cubic-bezier(.16,.84,.31,1), transform 620ms cubic-bezier(.16,.84,.31,1);
+    transition: opacity 620ms cubic-bezier(.16, .84, .31, 1),
+                transform 620ms cubic-bezier(.16, .84, .31, 1);
     will-change: opacity, transform;
 }
 
@@ -668,8 +690,65 @@ p {
     transform: translateY(0) scale(1);
 }
 
-/* Respect reduced motion preferences */
+/* ============================================
+   12. SCROLL PROGRESS BAR (GSAP scrub karta hai)
+============================================ */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    z-index: 2000;
+    pointer-events: none;
+    will-change: transform;
+}
+
+/* ============================================
+   13. KEYBOARD FOCUS
+============================================ */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+/* ============================================
+   14. GSAP HELPERS
+============================================ */
+/* Jab GSAP transform control kare to CSS transition band */
+.animating-gsap {
+    transition: none !important;
+}
+
+/* Magnetic buttons (GSAP desktop pe move karta hai) */
+.hero-buttons .btn,
+.contact-links .btn {
+    will-change: transform;
+    transform-origin: center center;
+}
+
+/* ============================================
+   15. REDUCED MOTION (Accessibility)
+============================================ */
 @media (prefers-reduced-motion: reduce) {
+    * {
+        scroll-behavior: auto !important;
+    }
+
+    .autoshow {
+        animation: none !important;
+    }
+
+    .cursor,
+    .status-indicator {
+        animation: none !important;
+    }
+
     .reveal-card {
         transition: none;
         opacity: 1;

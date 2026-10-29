@@ -72,10 +72,10 @@
     </script>
 </head>
 
-
-
-
 <body>
+    <!-- Scroll progress (GSAP se control hota hai) -->
+    <div class="scroll-progress" aria-hidden="true"></div>
+
     <header>
         <nav>
             <div class="left">Tani$hq.</div>
@@ -98,7 +98,7 @@
     </header>
 
     <main>
-        <!-- Home / Hero: Typed name (`#typed-name`) and dynamic role (`#dynamic-role`) are driven by `js/script.js` -->
+        <!-- Hero -->
         <section id="home" class="hero">
             <div class="hero-content">
                 <h1>Hi, I'm <span id="typed-name" class="highlight"></span><span class="cursor">|</span></h1>
@@ -115,7 +115,7 @@
             </div>
         </section>
 
-        <!-- About: Update `.about-text` content and skill tags inside `.skills-container` -->
+        <!-- About -->
         <section id="about" class="about-section">
             <div class="about-content">
                 <h2 class="autoshow">About <span class="highlight">Me</span></h2>
@@ -135,13 +135,12 @@
             </div>
         </section>
 
-        <!-- Projects: Add/modify `.project-card` elements to update portfolio entries -->
+        <!-- Projects -->
         <section id="projects" class="projects-section">
             <div class="autoshow">
                 <h2>My <span class="highlight">Projects</span></h2>
             </div>
             <div class="projects-grid">
-                <!-- ZenDoc Project Card -->
                 <div class="project-card">
                     <h3>ZenDoc - Private Document Toolkit</h3>
                     <p>A 100% client-side suite of 34 PDF & Image tools featuring WebRTC P2P file transfer (Ghost
@@ -150,7 +149,6 @@
                     <div class="project-links">
                         <a href="https://zendoc-gamma.vercel.app/" target="_blank" rel="noopener noreferrer"
                             class="btn-small">Live Demo</a>
-                        <!-- GitHub link removed because repo is private -->
                     </div>
                 </div>
                 <div class="project-card">
@@ -159,8 +157,7 @@
                     </p>
                     <div class="project-links">
                         <a href="https://tanishq-kushwaha.github.io/BTE-Result-Generator/" target="_blank"
-                            rel="noopener noreferrer" class="btn-small">Live
-                            Demo</a>
+                            rel="noopener noreferrer" class="btn-small">Live Demo</a>
                         <a href="https://github.com/Tanishq-kushwaha/BTE-Result-Generator" target="_blank"
                             rel="noopener noreferrer" class="btn-small outline">GitHub</a>
                     </div>
@@ -172,8 +169,7 @@
                     </p>
                     <div class="project-links">
                         <a href="https://tanishq-kushwaha.github.io/Cyber-Safe-Password-Analyzer/" target="_blank"
-                            rel="noopener noreferrer" class="btn-small">Live
-                            Demo</a>
+                            rel="noopener noreferrer" class="btn-small">Live Demo</a>
                         <a href="https://github.com/Tanishq-kushwaha/Cyber-Safe-Password-Analyzer" target="_blank"
                             rel="noopener noreferrer" class="btn-small outline">GitHub</a>
                     </div>
@@ -187,19 +183,15 @@
                     </p>
                     <div class="project-links">
                         <a href="https://tanishq-kushwaha.github.io/The-Online-C-Runner/" target="_blank"
-                            rel="noopener noreferrer" class="btn-small">
-                            Live Demo
-                        </a>
+                            rel="noopener noreferrer" class="btn-small">Live Demo</a>
                         <a href="https://github.com/Tanishq-kushwaha/The-Online-C-Runner" target="_blank"
-                            rel="noopener noreferrer" class="btn-small outline">
-                            GitHub
-                        </a>
+                            rel="noopener noreferrer" class="btn-small outline">GitHub</a>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Certifications: each `.cert-card` contains a certificate & verify link -->
+        <!-- Certifications -->
         <section id="certificates" class="certificates-section">
             <h2 class="autoshow">My <span class="highlight">Certifications</span></h2>
             <div class="certificates-grid">
@@ -224,7 +216,7 @@
             </div>
         </section>
 
-        <!-- Contact: update contact links or the mailto address as needed -->
+        <!-- Contact -->
         <section id="contact" class="contact-section">
             <h2 class="autoshow">Get In <span class="highlight">Touch</span></h2>
             <p id="contact-text"></p>
@@ -239,6 +231,7 @@
             </div>
         </section>
     </main>
+
     <footer class="premium-footer">
         <div class="footer-container">
             <div class="footer-brand">
@@ -257,9 +250,13 @@
         </div>
     </footer>
 
-    <!-- Data (content) and scripts: `js/data.js` holds textual content; `js/script.js` contains UI logic -->
-    <script src="js/data.js"></script>
-    <script src="js/script.js"></script>
+    <!-- GSAP Core + ScrollTrigger only (best for portfolio) -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+
+    
+    <script src="js/data.js" defer></script>
+    <script src="js/script.js" defer></script>
 </body>
 
 </html>
