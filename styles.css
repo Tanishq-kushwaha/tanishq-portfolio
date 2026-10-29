@@ -322,11 +322,6 @@ header.sticky {
     border-bottom-color: var(--nav-border-strong);
 }
 
-header.sticky {
-    background-color: var(--bg-main);
-    padding: 10px 0;
-    box-shadow: 0 4px 20px var(--sticky-shadow);
-}
 
 nav {
     display: flex;
@@ -1020,13 +1015,13 @@ p {
         backdrop-filter: blur(20px) saturate(160%);
         -webkit-backdrop-filter: blur(20px) saturate(160%);
         border-left: 1px solid var(--card-border);
-        
+
         position: fixed;
         right: -100%;
         top: 0;
         height: 100vh;
         width: 70%;
-        background-color: var(--bg-section);
+        
         flex-direction: column;
         justify-content: center;
         align-items: center;
