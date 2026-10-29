@@ -500,9 +500,131 @@
     }
 
     /* -----------------------------------------------------
+   8b. Pointer Effects (Cursor glow + Background parallax)
+   
+   Sirf desktop + mouse wale devices par chalta hai.
+   Touch phones / tablets / reduced-motion — sab skip.
+   
+   Do effects ek saath:
+     1. .cursor-glow div cursor ko smoothly follow karta hai
+     2. .bg-layer cursor ke OPPOSITE direction mein halke se shift hota hai
+----------------------------------------------------- */
+    function initPointerEffects() {
+        // Sirf desktop + mouse check
+        const isDesktopWithMouse = window.matchMedia(
+            '(hover: hover) and (pointer: fine)'
+        ).matches;
+
+        // Accessibility — reduced motion check
+        const prefersReduced = window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        ).matches;
+
+        // Koi bhi condition fail ho to kuch mat karo
+        if (!isDesktopWithMouse || prefersReduced || !gsapReady) {
+            return function noop() { /* nothing */ };
+        }
+
+        const glowEl = document.querySelector('.cursor-glow');
+        const bgEl = document.querySelector('.bg-layer');
+
+        /* ---- Part A: Cursor glow follower ---- */
+        let onGlowMove = null;
+        let onGlowLeave = null;
+
+        if (glowEl) {
+            // quickTo = ek hi tween ko retarget karta hai (1000x faster than gsap.to per move)
+            const glowXTo = gsap.quickTo(glowEl, 'x', { duration: 0.35, ease: 'power2.out' });
+            const glowYTo = gsap.quickTo(glowEl, 'y', { duration: 0.35, ease: 'power2.out' });
+
+            onGlowMove = function (event) {
+                document.body.classList.add('cursor-active');
+                glowXTo(event.clientX);
+                glowYTo(event.clientY);
+            };
+
+            onGlowLeave = function () {
+                document.body.classList.remove('cursor-active');
+            };
+
+            window.addEventListener('pointermove', onGlowMove, { passive: true });
+            document.documentElement.addEventListener('pointerleave', onGlowLeave);
+        }
+
+        /* ---- Part B: Background parallax ---- */
+        let onBgMove = null;
+
+        if (bgEl) {
+            const MAX_OFFSET = 14;   // 8-25 ke beech rakhna — zyada = zyada movement
+
+            const bgXTo = gsap.quickTo(bgEl, 'x', { duration: 1.4, ease: 'power2.out' });
+            const bgYTo = gsap.quickTo(bgEl, 'y', { duration: 1.4, ease: 'power2.out' });
+
+            onBgMove = function (event) {
+                // Cursor ki screen-center se doori, -1 se +1 range
+                const relX = (event.clientX / window.innerWidth - 0.5) * 2;
+                const relY = (event.clientY / window.innerHeight - 0.5) * 2;
+
+                // MINUS = opposite direction (cursor right → bg left)
+                bgXTo(-relX * MAX_OFFSET);
+                bgYTo(-relY * MAX_OFFSET);
+            };
+
+            window.addEventListener('pointermove', onBgMove, { passive: true });
+        }
+
+        /* ---- Cleanup function ---- */
+        return function cleanup() {
+            if (onGlowMove) window.removeEventListener('pointermove', onGlowMove);
+            if (onGlowLeave) document.documentElement.removeEventListener('pointerleave', onGlowLeave);
+            if (onBgMove) window.removeEventListener('pointermove', onBgMove);
+            document.body.classList.remove('cursor-active');
+            if (bgEl) gsap.set(bgEl, { x: 0, y: 0 });
+        };
+    }
+
+    /* -----------------------------------------------------
        9. Boot
     ----------------------------------------------------- */
     initMotion();
+
+
+    // Media query change par automatically on/off ho jayen
+    // (desktop ↔ mobile resize, reduced-motion toggle, etc.)
+    (function managePointerEffectsLifecycle() {
+        let activeCleanup = null;
+
+        const mediaQuery = window.matchMedia(
+            '(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)'
+        );
+
+        const activate = () => {
+            if (activeCleanup) return;
+            activeCleanup = initPointerEffects();
+        };
+
+        const deactivate = () => {
+            if (activeCleanup) {
+                activeCleanup();
+                activeCleanup = null;
+            }
+        };
+
+        if (mediaQuery.matches) activate();
+
+        if (mediaQuery.addEventListener) {
+            mediaQuery.addEventListener('change', (e) => {
+                if (e.matches) activate();
+                else deactivate();
+            });
+        } else if (mediaQuery.addListener) {
+            // Purani Safari fallback
+            mediaQuery.addListener((e) => {
+                if (e.matches) activate();
+                else deactivate();
+            });
+        }
+    })();
 
     window.addEventListener('load', () => {
         if (scrollTriggerReady && !prefersReducedMotion) {

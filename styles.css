@@ -141,6 +141,7 @@ a {
     background-color: var(--bg-main);
     /* canvas fail ho to bhi base color dikhe */
     transition: background-color 0.5s ease;
+    will-change: transform;
 }
 
 .bg-gradient {
@@ -292,6 +293,61 @@ a {
         transform: translate(-5%, -3%) scale(1.08);
     }
 }
+
+
+/* ============================================
+   3b. CURSOR GLOW FOLLOWER
+   Cursor ke saath chalne wali soft light —
+   sections ke translucent background se halke se dikhti hai.
+============================================ */
+
+.cursor-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 380px;
+    height: 380px;
+    margin-left: -190px;
+    /* 380 ka half — glow center cursor par aaye */
+    margin-top: -190px;
+    border-radius: 50%;
+    pointer-events: none;
+    /* clicks ko block nahi karta */
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    background: radial-gradient(circle,
+            rgba(99, 102, 241, 0.20) 0%,
+            rgba(139, 92, 246, 0.08) 35%,
+            transparent 70%);
+}
+
+[data-theme="dark"] .cursor-glow {
+    background: radial-gradient(circle,
+            rgba(139, 92, 246, 0.28) 0%,
+            rgba(99, 102, 241, 0.12) 40%,
+            transparent 72%);
+}
+
+body.cursor-active .cursor-glow {
+    opacity: 1;
+}
+
+/* Touch devices par cursor hi nahi — glow hide */
+@media (hover: none),
+(pointer: coarse) {
+    .cursor-glow {
+        display: none !important;
+    }
+}
+
+/* Reduced motion — bilkul disable */
+@media (prefers-reduced-motion: reduce) {
+    .cursor-glow {
+        display: none !important;
+    }
+}
+
 
 /* ============================================
    4. HEADER / NAVBAR
@@ -1021,7 +1077,7 @@ p {
         top: 0;
         height: 100vh;
         width: 70%;
-        
+
         flex-direction: column;
         justify-content: center;
         align-items: center;
