@@ -1,137 +1,108 @@
 /* =========================================================
    js/background.js
-   ---------------------------------------------------------
-   Cosmic (dark) + Aurora (light) animated background.
+   Theme-aware animated background.
 
-   Kaise kaam karta hai:
-   - Ek fixed <canvas> page ke peeche lagta hai
-   - Theme ke hisaab se particles + glow change hote hain
-   - Theme toggle se colors smoothly update hote hain
-   - Reduced-motion / hidden tab pe animation pause hoti hai
+   - Dark theme  -> cosmic stars (twinkling) + CSS nebula blobs
+   - Light theme -> drifting luminous dust + CSS aurora blobs
+   - Reduced motion pe bas ek static frame draw hota hai
+   - Page hidden (tab switch) pe animation pause ho jati hai
+   - themechange event pe theme switch hota hai (script.js dispatch karta hai)
 
-   Edit karne ke liye neeche CONFIG object dekho.
+   Customize karna ho to PALETTES object ke numbers badlo.
 ========================================================= */
 
 (function () {
     'use strict';
 
-    /* -----------------------------------------------------
-       CONFIG – yahan se colors, speed, density change karo
-    ----------------------------------------------------- */
-    const CONFIG = {
-        particlesPer1000px: 28,
-        particlesPer1000pxMobile: 14,
-        minSize: 0.6,
-        maxSize: 2.2,
-        speedMin: 0.08,
-        speedMax: 0.35,
-        twinkleSpeed: 0.008,
-        blobCount: 4,
-        blobSpeed: 0.00025
+    const canvas = document.getElementById('bg-canvas');
+    if (!canvas || !canvas.getContext) return; // Canvas support nahi to CSS gradient fallback chalega
+
+    const ctx = canvas.getContext('2d');
+    const root = document.documentElement;
+    const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const TAU = Math.PI * 2;
+
+    /* ---------- Tunable palettes ---------- */
+    const PALETTES = {
+        dark: {
+            starColor: '222, 226, 255',      // RGB string — sky-blue white
+            baseStarCount: 90,               // 1M pixels area ke liye
+            twinkleSpeedMin: 0.008,
+            twinkleSpeedMax: 0.025,
+            starRadiusMin: 0.3,
+            starRadiusMax: 1.6,
+            driftRange: 0.03                 // pixels/frame slow horizontal drift
+        },
+        light: {
+            dustColor: '120, 140, 220',      // soft lavender-blue
+            baseDustCount: 45,
+            dustRadiusMin: 1.0,
+            dustRadiusMax: 3.0,
+            driftSpeedMin: 0.05,
+            driftSpeedMax: 0.18
+        }
     };
 
-    // Dark theme – Cosmic
-    const DARK = {
-        bg: '#05050a',
-        particle: [
-            'rgba(180, 190, 255, 0.9)',
-            'rgba(139, 92, 246, 0.75)',
-            'rgba(99, 102, 241, 0.7)',
-            'rgba(200, 220, 255, 0.55)'
-        ],
-        blob: [
-            'rgba(88, 28, 135, 0.18)',
-            'rgba(30, 58, 138, 0.14)',
-            'rgba(67, 56, 202, 0.12)',
-            'rgba(15, 23, 42, 0.2)'
-        ]
-    };
-
-    // Light theme – Aurora
-    const LIGHT = {
-        bg: '#f4f6fb',
-        particle: [
-            'rgba(99, 102, 241, 0.35)',
-            'rgba(139, 92, 246, 0.28)',
-            'rgba(56, 189, 248, 0.3)',
-            'rgba(165, 180, 252, 0.25)'
-        ],
-        blob: [
-            'rgba(165, 180, 252, 0.22)',
-            'rgba(125, 211, 252, 0.18)',
-            'rgba(196, 181, 253, 0.16)',
-            'rgba(186, 230, 253, 0.14)'
-        ]
-    };
-
-    let canvas = null;
-    let ctx = null;
-    let particles = [];
-    let blobs = [];
-    let animationId = null;
-    let isDark = false;
+    /* ---------- State ---------- */
+    let currentTheme = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    let stars = [];
+    let dust = [];
     let width = 0;
     let height = 0;
-    let dpr = 1;
-    let reducedMotion = false;
-    let isVisible = true;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let rafId = null;
 
-    function randomBetween(min, max) {
-        return min + Math.random() * (max - min);
-    }
-
-    function getPalette() {
-        return isDark ? DARK : LIGHT;
-    }
-
-    function getParticleCount() {
-        const per1000 = width < 768
-            ? CONFIG.particlesPer1000pxMobile
-            : CONFIG.particlesPer1000px;
-        return Math.max(8, Math.round((width / 1000) * per1000));
-    }
-
-    function createParticle() {
-        const palette = getPalette();
+    /* ---------- Particle factories ---------- */
+    function createStar() {
+        const p = PALETTES.dark;
         return {
             x: Math.random() * width,
             y: Math.random() * height,
-            size: randomBetween(CONFIG.minSize, CONFIG.maxSize),
-            speedX: randomBetween(-CONFIG.speedMax, CONFIG.speedMax) * 0.4,
-            speedY: randomBetween(CONFIG.speedMin, CONFIG.speedMax),
-            opacity: randomBetween(0.25, 0.95),
-            twinkle: Math.random() * Math.PI * 2,
-            color: palette.particle[Math.floor(Math.random() * palette.particle.length)]
+            r: p.starRadiusMin + Math.random() * (p.starRadiusMax - p.starRadiusMin),
+            baseAlpha: 0.35 + Math.random() * 0.5,
+            phase: Math.random() * TAU,
+            twinkle: p.twinkleSpeedMin + Math.random() * (p.twinkleSpeedMax - p.twinkleSpeedMin),
+            drift: (Math.random() - 0.5) * 2 * p.driftRange
         };
     }
 
-    function createBlob(index) {
-        const palette = getPalette();
+    function createDust() {
+        const p = PALETTES.light;
+        const speed = p.driftSpeedMin + Math.random() * (p.driftSpeedMax - p.driftSpeedMin);
+        const angle = Math.random() * TAU;
         return {
             x: Math.random() * width,
             y: Math.random() * height,
-            radius: randomBetween(width * 0.18, width * 0.38),
-            speedX: randomBetween(-CONFIG.blobSpeed, CONFIG.blobSpeed) * width,
-            speedY: randomBetween(-CONFIG.blobSpeed, CONFIG.blobSpeed) * height,
-            color: palette.blob[index % palette.blob.length]
+            r: p.dustRadiusMin + Math.random() * (p.dustRadiusMax - p.dustRadiusMin),
+            baseAlpha: 0.15 + Math.random() * 0.35,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            phase: Math.random() * TAU
         };
+    }
+
+    /* Viewport area (million pixels) ke hisaab se count scale karo.
+       Chhoti screen par particles kam, badi par zyada. */
+    function getScaledCount(baseCount) {
+        const areaMP = (window.innerWidth * window.innerHeight) / 1_000_000;
+        return Math.max(15, Math.round(baseCount * Math.min(areaMP, 2)));
     }
 
     function rebuildParticles() {
-        const count = getParticleCount();
-        particles = [];
-        for (let i = 0; i < count; i++) {
-            particles.push(createParticle());
-        }
-        blobs = [];
-        for (let i = 0; i < CONFIG.blobCount; i++) {
-            blobs.push(createBlob(i));
-        }
+        const starCount = getScaledCount(PALETTES.dark.baseStarCount);
+        const dustCount = getScaledCount(PALETTES.light.baseDustCount);
+
+        stars = new Array(starCount);
+        for (let i = 0; i < starCount; i += 1) stars[i] = createStar();
+
+        dust = new Array(dustCount);
+        for (let i = 0; i < dustCount; i += 1) dust[i] = createDust();
     }
 
-    function resizeCanvas() {
-        if (!canvas) return;
-        dpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* ---------- Resize ---------- */
+    function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2); // Retina par memory limit
         width = window.innerWidth;
         height = window.innerHeight;
         canvas.width = Math.floor(width * dpr);
@@ -140,134 +111,129 @@
         canvas.style.height = height + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         rebuildParticles();
+        syncAnimationState();
     }
 
-    function drawFrame() {
-        if (!ctx) return;
-        const palette = getPalette();
-
-        ctx.fillStyle = palette.bg;
-        ctx.fillRect(0, 0, width, height);
-
-        // Soft blobs (nebula / aurora)
-        blobs.forEach((blob) => {
-            blob.x += blob.speedX;
-            blob.y += blob.speedY;
-            if (blob.x < -blob.radius) blob.x = width + blob.radius;
-            if (blob.x > width + blob.radius) blob.x = -blob.radius;
-            if (blob.y < -blob.radius) blob.y = height + blob.radius;
-            if (blob.y > height + blob.radius) blob.y = -blob.radius;
-
-            const gradient = ctx.createRadialGradient(
-                blob.x, blob.y, 0,
-                blob.x, blob.y, blob.radius
-            );
-            gradient.addColorStop(0, blob.color);
-            gradient.addColorStop(1, 'transparent');
-            ctx.fillStyle = gradient;
+    /* ---------- Draw functions ---------- */
+    function drawStars(time) {
+        ctx.fillStyle = 'rgb(' + PALETTES.dark.starColor + ')';
+        for (let i = 0; i < stars.length; i += 1) {
+            const star = stars[i];
+            const twinkle = Math.sin(time * star.twinkle + star.phase);
+            const alpha = star.baseAlpha + twinkle * 0.25;
+            ctx.globalAlpha = alpha > 0 ? alpha : 0;
             ctx.beginPath();
-            ctx.arc(blob.x, blob.y, blob.radius, 0, Math.PI * 2);
+            ctx.arc(star.x, star.y, star.r, 0, TAU);
             ctx.fill();
-        });
 
-        // Particles / stars
-        particles.forEach((p) => {
-            p.x += p.speedX;
-            p.y += p.speedY;
-            p.twinkle += CONFIG.twinkleSpeed;
-            if (p.x < 0) p.x = width;
-            if (p.x > width) p.x = 0;
-            if (p.y < 0) p.y = height;
-            if (p.y > height) p.y = 0;
-
-            const alpha = p.opacity * (0.55 + 0.45 * Math.sin(p.twinkle));
-            ctx.globalAlpha = Math.max(0.05, Math.min(1, alpha));
-            ctx.fillStyle = p.color;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fill();
-        });
+            // Slow horizontal drift + wrap-around
+            star.x += star.drift;
+            if (star.x < 0) star.x = width;
+            else if (star.x > width) star.x = 0;
+        }
         ctx.globalAlpha = 1;
     }
 
-    function loop() {
-        if (!isVisible || reducedMotion) {
-            drawFrame();
-            return;
+    function drawDust(time) {
+        ctx.fillStyle = 'rgb(' + PALETTES.light.dustColor + ')';
+        for (let i = 0; i < dust.length; i += 1) {
+            const d = dust[i];
+            const pulse = 0.7 + Math.sin(time * 0.001 + d.phase) * 0.3;
+            ctx.globalAlpha = d.baseAlpha * pulse;
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, d.r, 0, TAU);
+            ctx.fill();
+
+            // Drift + wrap
+            d.x += d.vx;
+            d.y += d.vy;
+            if (d.x < -10) d.x = width + 10;
+            else if (d.x > width + 10) d.x = -10;
+            if (d.y < -10) d.y = height + 10;
+            else if (d.y > height + 10) d.y = -10;
         }
-        drawFrame();
-        animationId = window.requestAnimationFrame(loop);
+        ctx.globalAlpha = 1;
     }
 
-    function startLoop() {
-        stopLoop();
-        if (reducedMotion) {
-            drawFrame();
-            return;
-        }
-        animationId = window.requestAnimationFrame(loop);
-    }
+    /* Ek frame draw karo, phir requestAnimationFrame schedule karo */
+    function animationFrame(now) {
+        const time = now || performance.now();
+        ctx.clearRect(0, 0, width, height);
 
-    function stopLoop() {
-        if (animationId) {
-            window.cancelAnimationFrame(animationId);
-            animationId = null;
-        }
-    }
-
-    function updateBackgroundTheme(theme) {
-        isDark = theme === 'dark';
-        rebuildParticles();
-        drawFrame();
-    }
-
-    function handleVisibility() {
-        isVisible = document.visibilityState === 'visible';
-        if (isVisible) startLoop();
-        else stopLoop();
-    }
-
-    function handleReducedMotion(event) {
-        reducedMotion = event.matches;
-        if (reducedMotion) {
-            stopLoop();
-            drawFrame();
+        if (currentTheme === 'dark') {
+            drawStars(time);
         } else {
-            startLoop();
+            drawDust(time);
+        }
+
+        rafId = requestAnimationFrame(animationFrame);
+    }
+
+    /* Reduced motion ke liye single static frame */
+    function drawStaticFrame() {
+        ctx.clearRect(0, 0, width, height);
+        if (currentTheme === 'dark') {
+            drawStars(0);
+        } else {
+            drawDust(0);
         }
     }
 
-    function initializeCosmicBackground() {
-        canvas = document.getElementById('bg-canvas');
-        if (!canvas) {
-            console.warn('bg-canvas not found');
-            return;
+    /* ---------- Control ---------- */
+    function startAnimation() {
+        if (rafId === null) {
+            rafId = requestAnimationFrame(animationFrame);
         }
-        ctx = canvas.getContext('2d', { alpha: false });
-        if (!ctx) return;
-
-        isDark = document.body.getAttribute('data-theme') === 'dark';
-        reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-        resizeCanvas();
-        startLoop();
-
-        window.addEventListener('resize', resizeCanvas, { passive: true });
-        document.addEventListener('visibilitychange', handleVisibility);
-        window.matchMedia('(prefers-reduced-motion: reduce)')
-            .addEventListener('change', handleReducedMotion);
     }
 
-    window.PortfolioBackground = {
-        init: initializeCosmicBackground,
-        updateTheme: updateBackgroundTheme,
-        stop: stopLoop,
-        start: startLoop
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeCosmicBackground);
-    } else {
-        initializeCosmicBackground();
+    function stopAnimation() {
+        if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
     }
+
+    /* Reduced motion ya page hidden ho to pause / static draw */
+    function syncAnimationState() {
+        const isPaused = reduceMotionQuery.matches || document.hidden;
+
+        if (isPaused) {
+            stopAnimation();
+            if (reduceMotionQuery.matches && !document.hidden) {
+                // Static frame taki background blank na lage
+                drawStaticFrame();
+            } else {
+                ctx.clearRect(0, 0, width, height);
+            }
+        } else {
+            startAnimation();
+        }
+    }
+
+    /* Theme switch — sirf relevant palette draw hogi next frame se */
+    function updateBackgroundTheme(theme) {
+        currentTheme = theme === 'dark' ? 'dark' : 'light';
+        syncAnimationState();
+    }
+
+    /* ---------- Events ---------- */
+    window.addEventListener('resize', resize, { passive: true });
+    document.addEventListener('visibilitychange', syncAnimationState);
+
+    if (reduceMotionQuery.addEventListener) {
+        reduceMotionQuery.addEventListener('change', syncAnimationState);
+    } else if (reduceMotionQuery.addListener) {
+        // Old Safari fallback
+        reduceMotionQuery.addListener(syncAnimationState);
+    }
+
+    // script.js se themechange event aata hai
+    document.addEventListener('themechange', function (event) {
+        if (event.detail && event.detail.theme) {
+            updateBackgroundTheme(event.detail.theme);
+        }
+    });
+
+    /* ---------- Boot ---------- */
+    resize();
 })();

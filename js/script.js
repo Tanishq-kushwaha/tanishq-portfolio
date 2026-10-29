@@ -1,14 +1,19 @@
 /* =========================================================
    js/script.js
-   Portfolio interactions + GSAP animations
-   
+   Portfolio UI + GSAP animations.
+
+   Changes vs previous version:
+   - Theme set ho raha hai <html> par (documentElement) — flash prevention
+   - Har theme change par `themechange` CustomEvent dispatch hota hai (background.js sunta hai)
+   - Magnetic button pull thoda kam, duration thoda smooth
+
    Features:
    - Sticky header + active nav link
    - Dark / Light theme (localStorage)
    - Typed name + rotating roles
    - Mobile hamburger menu
    - GSAP Core + ScrollTrigger animations
-   - Fallback (IntersectionObserver) agar GSAP load na ho
+   - IntersectionObserver fallback (agar GSAP load na ho)
    - prefers-reduced-motion support
 ========================================================= */
 
@@ -26,11 +31,10 @@
 
     if (scrollTriggerReady) {
         gsap.registerPlugin(ScrollTrigger);
-        // Mobile URL bar hide/show pe unnecessary refresh mat lo
         ScrollTrigger.config({ ignoreMobileResize: true });
     }
 
-    // Safe localStorage (private mode me error na aaye)
+    // Safe localStorage wrapper
     const storage = {
         get(key) {
             try { return window.localStorage.getItem(key); } catch (err) { return null; }
@@ -49,38 +53,41 @@
     syncHeader();
 
     /* -----------------------------------------------------
-       3. Theme toggle (Dark / Light)
+       3. Theme toggle
+       - Attribute <html> par set hota hai (head script flash rokta hai)
+       - CustomEvent `themechange` dispatch hota hai taaki background.js update ho
     ----------------------------------------------------- */
     const themeBtn = document.getElementById('theme-toggle');
-    const body = document.body;
+    const rootElement = document.documentElement;
 
     const setTheme = (theme) => {
-        if (theme === 'dark') {
-            body.setAttribute('data-theme', 'dark');
+        const isDark = theme === 'dark';
+
+        if (isDark) {
+            rootElement.setAttribute('data-theme', 'dark');
             themeBtn.textContent = '☀️ Light Mode';
             storage.set('theme', 'dark');
         } else {
-            body.removeAttribute('data-theme');
+            rootElement.removeAttribute('data-theme');
             themeBtn.textContent = '🌙 Dark Mode';
             storage.set('theme', 'light');
         }
 
-        // Theme change hone par background ke colors update karo
-        if (window.PortfolioBackground && window.PortfolioBackground.updateTheme) {
-            window.PortfolioBackground.updateTheme(theme);
-        }
+        // Background ko batayein theme change hui
+        document.dispatchEvent(new CustomEvent('themechange', {
+            detail: { theme: isDark ? 'dark' : 'light' }
+        }));
     };
 
-    // Page load pe saved theme apply karo
     setTheme(storage.get('theme') || 'light');
 
     themeBtn.addEventListener('click', () => {
-        const isDark = body.getAttribute('data-theme') === 'dark';
+        const isDark = rootElement.getAttribute('data-theme') === 'dark';
         setTheme(isDark ? 'light' : 'dark');
     });
 
     /* -----------------------------------------------------
-       4. Hero – Typed name + rotating roles
+       4. Hero typed name + rotating roles
     ----------------------------------------------------- */
     const nameElement = document.getElementById('typed-name');
     const roleElement = document.getElementById('dynamic-role');
@@ -117,12 +124,12 @@
         let typeSpeed = isDeleting ? 50 : 100;
 
         if (!isDeleting && charIndex === currentRole.length) {
-            typeSpeed = 2000;          // pause before delete
+            typeSpeed = 2000;
             isDeleting = true;
         } else if (isDeleting && charIndex === 0) {
             isDeleting = false;
             roleIndex = (roleIndex + 1) % roles.length;
-            typeSpeed = 500;           // small pause before next role
+            typeSpeed = 500;
         }
 
         window.setTimeout(startDynamicRoles, typeSpeed);
@@ -134,16 +141,17 @@
         typeName();
     }
 
-    // Reduced motion: typing skip, final text dikhao
     if (prefersReducedMotion) {
+        // Reduced motion: typing skip, final text
         nameElement.textContent = fullName;
         roleElement.textContent = roles[0];
     } else {
+        // Fallback: agar GSAP fail ho to load par 900ms baad start
         window.addEventListener('load', () => window.setTimeout(startTypingOnce, 900));
     }
 
     /* -----------------------------------------------------
-       5. Mobile navigation (hamburger)
+       5. Mobile navigation
     ----------------------------------------------------- */
     const hamburger = document.getElementById('hamburger');
     const navMenu = document.getElementById('nav-menu');
@@ -153,7 +161,6 @@
         navMenu.classList.toggle('active');
     });
 
-    // Link click pe menu band karo
     document.querySelectorAll('.nav-links a').forEach((link) => {
         link.addEventListener('click', () => {
             hamburger.classList.remove('active');
@@ -234,19 +241,17 @@
     }
 
     /* -----------------------------------------------------
-       8. GSAP Motion Layer (Core + ScrollTrigger only)
+       8. GSAP Motion Layer
     ----------------------------------------------------- */
     function initMotion() {
-        // GSAP nahi mila to fallback chalao
         if (!gsapReady || !scrollTriggerReady) {
             initCardFallback();
             return;
         }
 
-        // CSS scroll-timeline hata do (GSAP control lega)
+        // CSS scroll-timeline hata do — GSAP control lega
         document.querySelectorAll('.autoshow').forEach((el) => el.classList.remove('autoshow'));
 
-        // Reduced motion: koi animation mat chalao
         if (prefersReducedMotion) return;
 
         const mm = gsap.matchMedia();
@@ -262,9 +267,9 @@
                 if (!motionOk) return;
 
                 const cleanups = [];
-                const distance = isDesktop ? 36 : 22; // mobile pe chhota distance
+                const distance = isDesktop ? 36 : 22;
 
-                /* Helper: elements ko reveal karo + hover ke liye transform clear karo */
+                /* Helper: reveal with hover-safe transform clearing */
                 const fromReveal = (targets, fromVars, scrollTriggerVars) => {
                     const elements = gsap.utils.toArray(targets);
                     if (!elements.length) return;
@@ -326,9 +331,12 @@
                         opacity: 0,
                         scale: 0.88,
                         y: 28,
-                        duration: 1.05,
-                        ease: 'power3.out'
+                        duration: 1.05
                     }, 0.28)
+                    .from('.hero-orbit', {
+                        opacity: 0,
+                        duration: 0.8
+                    }, 0.6)
                     .from(heroButtons, {
                         y: 22,
                         opacity: 0,
@@ -341,7 +349,7 @@
                     }, 0.7)
                     .call(startTypingOnce, null, 0.85);
 
-                /* Desktop only: parallax + pointer tilt on photo */
+                /* ----- Desktop-only: parallax + pointer tilt ----- */
                 if (isDesktop) {
                     gsap.to('.hero-image', {
                         yPercent: 10,
@@ -367,17 +375,14 @@
                             const rect = heroImage.getBoundingClientRect();
                             const relX = (event.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
                             const relY = (event.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-                            xTo(relX * 12);
-                            yTo(relY * 12);
-                            rotateXTo(-relY * 7);
-                            rotateYTo(relX * 7);
+                            xTo(relX * 10);
+                            yTo(relY * 10);
+                            rotateXTo(-relY * 6);
+                            rotateYTo(relX * 6);
                         };
 
                         const resetTilt = () => {
-                            xTo(0);
-                            yTo(0);
-                            rotateXTo(0);
-                            rotateYTo(0);
+                            xTo(0); yTo(0); rotateXTo(0); rotateYTo(0);
                         };
 
                         heroSection.addEventListener('pointermove', handlePointerMove);
@@ -390,19 +395,20 @@
                     }
                 }
 
-                /* Magnetic buttons – sirf desktop + fine pointer */
+                /* ----- Magnetic buttons (desktop + fine pointer) ----- */
                 if (isDesktop && isFinePointer) {
                     const magneticTargets = gsap.utils.toArray('.hero-buttons .btn, .contact-links .btn');
                     magneticTargets.forEach((btn) => {
-                        const xTo = gsap.quickTo(btn, 'x', { duration: 0.35, ease: 'power3' });
-                        const yTo = gsap.quickTo(btn, 'y', { duration: 0.35, ease: 'power3' });
+                        const xTo = gsap.quickTo(btn, 'x', { duration: 0.4, ease: 'power3' });
+                        const yTo = gsap.quickTo(btn, 'y', { duration: 0.4, ease: 'power3' });
 
                         const onMove = (e) => {
                             const rect = btn.getBoundingClientRect();
                             const relX = e.clientX - (rect.left + rect.width / 2);
                             const relY = e.clientY - (rect.top + rect.height / 2);
-                            xTo(relX * 0.28);
-                            yTo(relY * 0.28);
+                            // 0.2 = 20% pull; badhana ho to 0.3+ kar do
+                            xTo(relX * 0.2);
+                            yTo(relY * 0.2);
                         };
 
                         const onLeave = () => {
@@ -421,143 +427,68 @@
                     });
                 }
 
-                /* ----- About section ----- */
-                fromReveal('#about h2', {
-                    y: distance,
-                    opacity: 0,
-                    duration: 0.75,
-                    ease: 'power3.out'
-                }, {
-                    trigger: '#about',
-                    start: 'top 80%'
+                /* ----- About ----- */
+                fromReveal('#about h2', { y: distance, opacity: 0, duration: 0.75 }, {
+                    trigger: '#about', start: 'top 80%'
                 });
-
-                fromReveal('.about-text', {
-                    y: distance,
-                    opacity: 0,
-                    duration: 0.85,
-                    ease: 'power3.out'
-                }, {
-                    trigger: '.about-text',
-                    start: 'top 86%'
+                fromReveal('.about-text', { y: distance, opacity: 0, duration: 0.85 }, {
+                    trigger: '.about-text', start: 'top 86%'
                 });
-
                 fromReveal('.skill-tag', {
-                    y: 20,
-                    opacity: 0,
-                    scale: 0.94,
-                    duration: 0.5,
-                    stagger: 0.055,
-                    ease: 'power2.out'
+                    y: 20, opacity: 0, scale: 0.94, duration: 0.5, stagger: 0.055, ease: 'power2.out'
                 }, {
-                    trigger: '.skills-container',
-                    start: 'top 90%'
+                    trigger: '.skills-container', start: 'top 90%'
                 });
 
-                /* ----- Projects section ----- */
-                fromReveal('#projects h2', {
-                    y: distance,
-                    opacity: 0,
-                    duration: 0.75,
-                    ease: 'power3.out'
-                }, {
-                    trigger: '#projects',
-                    start: 'top 80%'
+                /* ----- Projects ----- */
+                fromReveal('#projects h2', { y: distance, opacity: 0, duration: 0.75 }, {
+                    trigger: '#projects', start: 'top 80%'
                 });
-
                 fromReveal('.project-card', {
-                    y: distance + 8,
-                    opacity: 0,
-                    scale: 0.96,
-                    duration: 0.75,
-                    stagger: 0.12,
-                    ease: 'power3.out'
+                    y: distance + 8, opacity: 0, scale: 0.96, duration: 0.75, stagger: 0.12
                 }, {
-                    trigger: '.projects-grid',
-                    start: 'top 86%'
+                    trigger: '.projects-grid', start: 'top 86%'
                 });
 
-                /* ----- Certifications section ----- */
-                fromReveal('#certificates h2', {
-                    y: distance,
-                    opacity: 0,
-                    duration: 0.75,
-                    ease: 'power3.out'
-                }, {
-                    trigger: '#certificates',
-                    start: 'top 80%'
+                /* ----- Certifications ----- */
+                fromReveal('#certificates h2', { y: distance, opacity: 0, duration: 0.75 }, {
+                    trigger: '#certificates', start: 'top 80%'
                 });
-
                 fromReveal('.cert-card', {
-                    y: distance + 6,
-                    opacity: 0,
-                    scale: 0.96,
-                    duration: 0.7,
-                    stagger: 0.11,
-                    ease: 'power3.out'
+                    y: distance + 6, opacity: 0, scale: 0.96, duration: 0.7, stagger: 0.11
                 }, {
-                    trigger: '.certificates-grid',
-                    start: 'top 86%'
+                    trigger: '.certificates-grid', start: 'top 86%'
                 });
 
-                /* ----- Contact section ----- */
-                fromReveal('#contact h2', {
-                    y: distance,
-                    opacity: 0,
-                    duration: 0.75,
-                    ease: 'power3.out'
-                }, {
-                    trigger: '#contact',
-                    start: 'top 80%'
+                /* ----- Contact ----- */
+                fromReveal('#contact h2', { y: distance, opacity: 0, duration: 0.75 }, {
+                    trigger: '#contact', start: 'top 80%'
                 });
-
-                fromReveal('#contact-text', {
-                    y: distance,
-                    opacity: 0,
-                    duration: 0.85,
-                    ease: 'power3.out'
-                }, {
-                    trigger: '#contact-text',
-                    start: 'top 88%'
+                fromReveal('#contact-text', { y: distance, opacity: 0, duration: 0.85 }, {
+                    trigger: '#contact-text', start: 'top 88%'
                 });
-
                 fromReveal('.contact-links .btn', {
-                    y: 20,
-                    opacity: 0,
-                    duration: 0.55,
-                    stagger: 0.09,
-                    ease: 'power2.out'
+                    y: 20, opacity: 0, duration: 0.55, stagger: 0.09, ease: 'power2.out'
                 }, {
-                    trigger: '.contact-links',
-                    start: 'top 90%'
+                    trigger: '.contact-links', start: 'top 90%'
                 });
 
                 /* ----- Footer ----- */
                 fromReveal('.footer-brand, .footer-copyright, .footer-status', {
-                    y: 24,
-                    opacity: 0,
-                    duration: 0.65,
-                    stagger: 0.1,
-                    ease: 'power2.out'
+                    y: 24, opacity: 0, duration: 0.65, stagger: 0.1, ease: 'power2.out'
                 }, {
-                    trigger: '.premium-footer',
-                    start: 'top 94%'
+                    trigger: '.premium-footer', start: 'top 94%'
                 });
 
-                /* ----- Scroll progress bar ----- */
+                /* ----- Scroll progress ----- */
                 if (document.querySelector('.scroll-progress')) {
                     gsap.to('.scroll-progress', {
                         scaleX: 1,
                         ease: 'none',
-                        scrollTrigger: {
-                            start: 0,
-                            end: 'max',
-                            scrub: 0.25
-                        }
+                        scrollTrigger: { start: 0, end: 'max', scrub: 0.25 }
                     });
                 }
 
-                /* Cleanup jab media query change ho */
                 return () => {
                     cleanups.forEach((fn) => fn());
                     document.querySelectorAll('.animating-gsap').forEach((el) => {
@@ -569,7 +500,7 @@
     }
 
     /* -----------------------------------------------------
-       9. Boot – animations start
+       9. Boot
     ----------------------------------------------------- */
     initMotion();
 
@@ -579,7 +510,6 @@
         }
     });
 
-    // Fonts load hone ke baad positions refresh karo
     if (scrollTriggerReady && document.fonts && document.fonts.ready) {
         document.fonts.ready.then(() => {
             if (!prefersReducedMotion) ScrollTrigger.refresh();

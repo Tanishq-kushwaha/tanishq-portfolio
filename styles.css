@@ -1,14 +1,27 @@
 /*
-    styles.css – Tanishq's Portfolio
-    --------------------------------
-    - CSS variables se colors / shadows easily change kar sakte ho
-    - data-theme="dark" se dark mode (JS control karta hai)
-    - GSAP entrance animations handle karta hai
-    - .autoshow CSS scroll-timeline fallback hai (GSAP load hone pe JS hata deta hai)
+    styles.css — Tani$hq Portfolio
+    ------------------------------
+    Sections:
+      1.  Root variables (light + dark)
+      2.  Global base
+      3.  Background layer (cosmic/aurora) — background.js ke saath milke chalta hai
+      4.  Header / Navbar
+      5.  Hero section (+ orbital ring)
+      6.  Buttons (translate-property hover, GSAP-friendly)
+      7.  Sections common
+      8.  Skills
+      9.  Project & certificate cards
+      10. Footer
+      11. Responsive
+      12. CSS fallback animations (GSAP available hone par JS hata deta hai)
+      13. Scroll progress
+      14. Keyboard focus
+      15. GSAP helpers
+      16. Reduced motion
 */
 
 /* ============================================
-   1. ROOT VARIABLES (Light + Dark)
+   1. ROOT VARIABLES
 ============================================ */
 :root {
     --bg-main: #f8fafc;
@@ -41,7 +54,7 @@
 }
 
 /* ============================================
-   2. GLOBAL RESET & BASE
+   2. GLOBAL BASE
 ============================================ */
 * {
     margin: 0;
@@ -50,24 +63,23 @@
     scroll-behavior: smooth;
 }
 
+html {
+    /* body ka background-color yahin shift kiya taaki .bg-layer (z-index: -1)
+       uske upar render ho sake */
+    background-color: var(--bg-main);
+    transition: background-color 0.5s ease;
+    /* Fixed header ke liye anchor offset */
+    scroll-padding-top: 90px;
+}
+
 body {
-    background-color: transparent;
     color: var(--text-main);
     font-family: "Poppins", sans-serif;
     transition: color 0.4s ease;
     overflow-x: hidden;
     line-height: 1.6;
-}
-
-#bg-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    pointer-events: none;
-    display: block;
+    /* Transparent rakha — base color html par hai */
+    background-color: transparent;
 }
 
 a {
@@ -75,13 +87,87 @@ a {
     color: var(--text-main);
 }
 
-/* Fixed header ke liye scroll padding */
-html {
-    scroll-padding-top: 90px;
+/* ============================================
+   3. BACKGROUND LAYER (Cosmic / Aurora)
+   - Fixed full-screen, content ke peeche
+   - theme ke hisaab se gradients badalte hain
+   - background.js canvas par particles draw karta hai
+============================================ */
+.bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    background-color: var(--bg-main); /* canvas fail ho to bhi base color dikhe */
+    transition: background-color 0.5s ease;
+}
+
+.bg-gradient {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+/* Light aurora — do soft blobs jo slowly drift karte hain */
+.bg-gradient::before,
+.bg-gradient::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform;
+}
+
+.bg-gradient::before {
+    width: 75vmax;
+    height: 75vmax;
+    top: -25%;
+    left: -20%;
+    background: radial-gradient(circle, rgba(160, 190, 255, 0.32) 0%, rgba(160, 190, 255, 0.08) 45%, transparent 70%);
+    animation: auroraDriftA 44s ease-in-out infinite alternate;
+}
+
+.bg-gradient::after {
+    width: 65vmax;
+    height: 65vmax;
+    bottom: -20%;
+    right: -15%;
+    background: radial-gradient(circle, rgba(200, 170, 255, 0.26) 0%, rgba(200, 170, 255, 0.06) 45%, transparent 70%);
+    animation: auroraDriftB 52s ease-in-out infinite alternate;
+}
+
+/* Dark cosmic — violet + indigo nebula blobs */
+[data-theme="dark"] .bg-gradient::before {
+    background: radial-gradient(circle, rgba(120, 60, 220, 0.28) 0%, rgba(120, 60, 220, 0.06) 45%, transparent 70%);
+    animation-duration: 48s;
+}
+
+[data-theme="dark"] .bg-gradient::after {
+    background: radial-gradient(circle, rgba(50, 80, 200, 0.24) 0%, rgba(50, 80, 200, 0.05) 45%, transparent 70%);
+    animation-duration: 58s;
+}
+
+#bg-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+@keyframes auroraDriftA {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(6%, 4%) scale(1.10); }
+}
+
+@keyframes auroraDriftB {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(-5%, -3%) scale(1.08); }
 }
 
 /* ============================================
-   3. HEADER / NAVBAR
+   4. HEADER / NAVBAR
 ============================================ */
 header {
     background-color: var(--nav-bg);
@@ -137,7 +223,6 @@ nav {
     color: var(--accent);
 }
 
-/* Active nav link */
 .nav-links li a.active {
     color: var(--accent);
     font-weight: 700;
@@ -173,7 +258,6 @@ nav {
     color: #ffffff;
 }
 
-/* Hamburger (mobile) */
 .hamburger {
     display: none;
     cursor: pointer;
@@ -192,7 +276,7 @@ nav {
 }
 
 /* ============================================
-   4. HERO SECTION
+   5. HERO SECTION
 ============================================ */
 .cursor {
     color: var(--accent);
@@ -200,15 +284,8 @@ nav {
 }
 
 @keyframes blink {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0;
-    }
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0; }
 }
 
 .dynamic-text {
@@ -228,8 +305,7 @@ nav {
     margin: 0 auto;
     padding: 100px 20px 60px;
     gap: 40px;
-    perspective: 1200px;
-    /* GSAP tilt ke liye 3D space */
+    perspective: 1200px; /* GSAP tilt ke liye 3D space */
 }
 
 .hero-content {
@@ -253,7 +329,7 @@ nav {
     flex-wrap: wrap;
 }
 
-/* Hero Image */
+/* Hero image container */
 .hero-image {
     position: relative;
     flex-shrink: 0;
@@ -269,6 +345,8 @@ nav {
         0 0 0 10px var(--bg-main),
         0 0 50px rgba(99, 102, 241, 0.35);
     transition: transform 0.4s ease, box-shadow 0.4s ease;
+    position: relative;
+    z-index: 1;
 }
 
 .hero-image img:hover {
@@ -278,18 +356,55 @@ nav {
         0 0 60px rgba(99, 102, 241, 0.5);
 }
 
-/* Soft glow behind photo */
+/* Soft glow behind photo — subtle pulse */
 .hero-image::before {
     content: "";
     position: absolute;
     inset: -15px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-    z-index: -1;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, transparent 70%);
+    z-index: 0;
+    animation: heroGlowPulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes heroGlowPulse {
+    from { transform: scale(0.95); opacity: 0.7; }
+    to   { transform: scale(1.05); opacity: 1;   }
+}
+
+/* Orbital ring — image ke around ghoomta hua dot */
+.hero-orbit {
+    position: absolute;
+    inset: -30px;
+    border-radius: 50%;
+    border: 1px dashed rgba(99, 102, 241, 0.28);
+    z-index: 0;
+    pointer-events: none;
+    animation: orbitSpin 30s linear infinite;
+}
+
+.hero-orbit::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 14px var(--accent), 0 0 24px rgba(139, 92, 246, 0.5);
+    transform: translateX(-50%);
+}
+
+@keyframes orbitSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
 }
 
 /* ============================================
-   5. BUTTONS
+   6. BUTTONS
+   - `translate` property CSS hover lift ke liye
+     (GSAP magnetic transform ke saath compose hota hai)
 ============================================ */
 .btn,
 .btn-small {
@@ -298,7 +413,7 @@ nav {
     color: #ffffff;
     border-radius: 8px;
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: translate 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
     border: none;
     cursor: pointer;
     display: inline-block;
@@ -313,7 +428,7 @@ nav {
 .btn:hover,
 .btn-small:hover {
     background-color: var(--accent-hover);
-    transform: translateY(-3px);
+    translate: 0 -3px;
     box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
 }
 
@@ -328,11 +443,11 @@ nav {
 .btn-small.outline:hover {
     background-color: var(--accent);
     color: #ffffff;
-    transform: translateY(-3px);
+    translate: 0 -3px;
 }
 
 /* ============================================
-   6. SECTIONS COMMON
+   7. SECTIONS COMMON
 ============================================ */
 .about-section,
 .certificates-section,
@@ -368,7 +483,7 @@ p {
 }
 
 /* ============================================
-   7. SKILLS
+   8. SKILLS
 ============================================ */
 .skills-container {
     display: flex;
@@ -387,7 +502,7 @@ p {
     border-radius: 50px;
     font-weight: 500;
     font-size: 0.95rem;
-    transition: all 0.3s ease;
+    transition: translate 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     box-shadow: var(--card-shadow);
 }
 
@@ -395,12 +510,12 @@ p {
     background-color: var(--accent);
     color: #ffffff;
     border-color: var(--accent);
-    transform: translateY(-4px);
+    translate: 0 -4px;
     box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
 }
 
 /* ============================================
-   8. PROJECT & CERTIFICATE CARDS
+   9. PROJECT & CERTIFICATE CARDS
 ============================================ */
 .projects-grid,
 .certificates-grid {
@@ -419,7 +534,9 @@ p {
     border-radius: 16px;
     width: 340px;
     text-align: left;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.35s ease,
+                border-color 0.35s ease;
     border: 1px solid var(--border);
     box-shadow: var(--card-shadow);
     position: relative;
@@ -431,7 +548,6 @@ p {
     width: 310px;
 }
 
-/* Premium hover */
 .project-card:hover,
 .cert-card:hover {
     transform: translateY(-10px) scale(1.02);
@@ -439,7 +555,6 @@ p {
     border-color: var(--accent);
 }
 
-/* Top accent line on hover */
 .project-card::before,
 .cert-card::before {
     content: "";
@@ -498,7 +613,7 @@ p {
 }
 
 /* ============================================
-   9. FOOTER
+   10. FOOTER
 ============================================ */
 .premium-footer {
     background-color: var(--bg-section);
@@ -565,20 +680,9 @@ p {
 }
 
 @keyframes pulse {
-    0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-    }
-
-    70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
-    }
-
-    100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-    }
+    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70%  { transform: scale(1);    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
 .footer-status span {
@@ -588,12 +692,10 @@ p {
 }
 
 /* ============================================
-   10. RESPONSIVE (Mobile ≤ 768px)
+   11. RESPONSIVE
 ============================================ */
 @media (max-width: 768px) {
-    .hamburger {
-        display: flex;
-    }
+    .hamburger { display: flex; }
 
     nav {
         flex-direction: row;
@@ -616,9 +718,7 @@ p {
         z-index: 1050;
     }
 
-    .nav-links.active {
-        right: 0;
-    }
+    .nav-links.active { right: 0; }
 
     .hero {
         flex-direction: column-reverse;
@@ -628,39 +728,24 @@ p {
         gap: 30px;
     }
 
-    .hero-image {
-        margin-bottom: 10px;
-    }
+    .hero-image { margin-bottom: 10px; }
 
     .hero-image img {
         width: 240px;
         height: 240px;
     }
 
-    .hero-buttons {
-        justify-content: center;
-    }
+    /* Chhoti screen par orbit ka radius kam */
+    .hero-orbit { inset: -20px; }
 
-    .hero h1 {
-        font-size: 2.4rem;
-    }
+    .hero-buttons { justify-content: center; }
 
-    .dynamic-text {
-        font-size: 1.15rem;
-    }
+    .hero h1 { font-size: 2.4rem; }
+    .dynamic-text { font-size: 1.15rem; }
 
-    /* Hamburger → X */
-    .hamburger.active span:nth-child(1) {
-        transform: rotate(45deg) translate(5px, 6px);
-    }
-
-    .hamburger.active span:nth-child(2) {
-        opacity: 0;
-    }
-
-    .hamburger.active span:nth-child(3) {
-        transform: rotate(-45deg) translate(5px, -6px);
-    }
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 6px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -6px); }
 
     .project-card,
     .cert-card {
@@ -673,14 +758,17 @@ p {
         text-align: center;
     }
 
-    .footer-status {
-        order: -1;
-    }
+    .footer-status { order: -1; }
+}
+
+/* Bahut chhoti screen par orbit hide */
+@media (max-width: 400px) {
+    .hero-orbit { display: none; }
 }
 
 /* ============================================
-   11. CSS FALLBACK ANIMATIONS
-   (GSAP load hone pe JS inhe hata deta hai)
+   12. CSS FALLBACK ANIMATIONS
+   (GSAP load hone par JS .autoshow hata deta hai)
 ============================================ */
 .autoshow {
     animation: text-appear both;
@@ -689,23 +777,16 @@ p {
 }
 
 @keyframes text-appear {
-    from {
-        opacity: 0;
-        transform: translateY(80px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(80px); }
+    to   { opacity: 1; transform: translateY(0);    }
 }
 
-/* IntersectionObserver fallback cards */
+/* IntersectionObserver fallback (jab GSAP available na ho) */
 .reveal-card {
     opacity: 0;
     transform: translateY(24px) scale(0.985);
     transition: opacity 620ms cubic-bezier(.16, .84, .31, 1),
-        transform 620ms cubic-bezier(.16, .84, .31, 1);
+                transform 620ms cubic-bezier(.16, .84, .31, 1);
     will-change: opacity, transform;
 }
 
@@ -715,7 +796,7 @@ p {
 }
 
 /* ============================================
-   12. SCROLL PROGRESS BAR (GSAP scrub karta hai)
+   13. SCROLL PROGRESS BAR
 ============================================ */
 .scroll-progress {
     position: fixed;
@@ -732,7 +813,7 @@ p {
 }
 
 /* ============================================
-   13. KEYBOARD FOCUS
+   14. KEYBOARD FOCUS
 ============================================ */
 a:focus-visible,
 button:focus-visible {
@@ -742,14 +823,14 @@ button:focus-visible {
 }
 
 /* ============================================
-   14. GSAP HELPERS
+   15. GSAP HELPERS
 ============================================ */
 /* Jab GSAP transform control kare to CSS transition band */
 .animating-gsap {
     transition: none !important;
 }
 
-/* Magnetic buttons (GSAP desktop pe move karta hai) */
+/* Magnetic buttons ke liye hint */
 .hero-buttons .btn,
 .contact-links .btn {
     will-change: transform;
@@ -757,19 +838,20 @@ button:focus-visible {
 }
 
 /* ============================================
-   15. REDUCED MOTION (Accessibility)
+   16. REDUCED MOTION
 ============================================ */
 @media (prefers-reduced-motion: reduce) {
     * {
         scroll-behavior: auto !important;
     }
 
-    .autoshow {
-        animation: none !important;
-    }
-
+    .autoshow,
     .cursor,
-    .status-indicator {
+    .status-indicator,
+    .hero-orbit,
+    .hero-image::before,
+    .bg-gradient::before,
+    .bg-gradient::after {
         animation: none !important;
     }
 
@@ -778,18 +860,4 @@ button:focus-visible {
         opacity: 1;
         transform: none;
     }
-}
-
-.about-section,
-.certificates-section,
-.contact-section {
-    padding: 45px 20px;
-    background-color: color-mix(in srgb, var(--bg-section) 88%, transparent);
-    text-align: center;
-}
-
-.projects-section {
-    padding: 90px 20px;
-    background-color: color-mix(in srgb, var(--bg-main) 82%, transparent);
-    text-align: center;
 }

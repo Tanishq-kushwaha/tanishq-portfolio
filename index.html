@@ -4,6 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Theme flash prevention — page load pe galat theme flash na ho -->
+    <script>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (err) { /* localStorage blocked -> ignore */ }
+        })();
+    </script>
+
     <meta name="google-site-verification" content="hdczW-LOYtQgz2_vqH6aSem-Pdx83Hzbb-7zvYO3N9s" />
     <meta name="msvalidate.01" content="6B8F79A8DD87ADE763C27590AE38233F" />
     <title>Tanishq's Developer Portfolio</title>
@@ -73,8 +86,16 @@
 </head>
 
 <body>
-    <canvas id="bg-canvas" aria-hidden="true"></canvas>
-    <!-- Scroll progress (GSAP se control hota hai) -->
+    <!-- ============================================================
+         Background Layer — Theme ke hisaab se cosmic (dark) ya aurora (light)
+         Ye click/scroll/selection ko block nahi karta (pointer-events: none).
+    ============================================================ -->
+    <div class="bg-layer" aria-hidden="true">
+        <div class="bg-gradient"></div>
+        <canvas id="bg-canvas"></canvas>
+    </div>
+
+    <!-- Scroll progress bar (GSAP/ScrollTrigger se) -->
     <div class="scroll-progress" aria-hidden="true"></div>
 
     <header>
@@ -111,6 +132,8 @@
                 </div>
             </div>
             <div class="hero-image">
+                <!-- Orbital ring — profile image ke around ghoomta hua decorative dot -->
+                <div class="hero-orbit" aria-hidden="true"></div>
                 <img src="assets/photo2.jpg" alt="Tanishq Kushwaha - Junior Software Developer Kanpur"
                     fetchpriority="high" width="300" height="300">
             </div>
@@ -251,11 +274,13 @@
         </div>
     </footer>
 
-
-    <script src="js/background.js" defer></script>
+    <!-- GSAP Core + ScrollTrigger (CDN, pinned version) -->
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+
+    <!-- data.js: About + Contact text | background.js: theme-aware canvas | script.js: UI + GSAP motion -->
     <script src="js/data.js" defer></script>
+    <script src="js/background.js" defer></script>
     <script src="js/script.js" defer></script>
 </body>
 
