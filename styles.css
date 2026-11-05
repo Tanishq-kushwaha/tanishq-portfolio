@@ -1082,6 +1082,11 @@ section {
         transition: font-size 0.25s ease;
     }
 
+    /* Dark mode: white text on lavender fails contrast — use dark ink */
+    [data-theme="dark"] .cursor-label {
+        color: #1a1625;
+    }
+
     /* Label mode: ring fills + grows, dashed border fades out */
     .cursor-ring.label-mode {
         width: 88px;
