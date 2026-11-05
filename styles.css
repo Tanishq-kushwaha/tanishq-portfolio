@@ -323,17 +323,18 @@ main {
     margin: 0 auto;
 }
 
+/* More generous vertical rhythm — editorial breathing room */
 section {
     position: relative;
-    padding-block: clamp(80px, 12vh, 140px);
+    padding-block: clamp(96px, 14vh, 160px);
 }
 
 .section-head {
     display: flex;
     align-items: baseline;
-    gap: 18px;
-    margin-bottom: 44px;
-    padding-bottom: 18px;
+    gap: 22px;
+    margin-bottom: 56px;
+    padding-bottom: 20px;
     border-bottom: 1px solid var(--line);
 }
 
@@ -341,16 +342,17 @@ section {
     font-family: Georgia, "Times New Roman", serif;
     color: var(--accent);
     font-size: 0.85rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     flex-shrink: 0;
 }
 
+/* Tighter tracking + line-height = more editorial presence at larger sizes */
 .section-head h2 {
     font-family: Georgia, "Times New Roman", serif;
     font-weight: 400;
-    font-size: clamp(1.9rem, 3.6vw, 2.9rem);
-    letter-spacing: -0.02em;
-    line-height: 1.1;
+    font-size: clamp(2rem, 3.8vw, 3.1rem);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
 }
 
 .section-head h2 .highlight {
@@ -365,11 +367,11 @@ section {
 .hero {
     position: relative;
     min-height: min(880px, 100svh);
-    padding: 180px 0 130px;
+    padding: 200px 0 140px;
     display: grid;
     grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
     align-items: center;
-    gap: clamp(48px, 9vw, 130px);
+    gap: clamp(56px, 10vw, 140px);
 }
 
 .hero-content {
@@ -380,20 +382,21 @@ section {
 .hero-content::before {
     content: "INDEPENDENT DEVELOPER  ·  KANPUR, INDIA";
     display: block;
-    margin-bottom: 40px;
+    margin-bottom: 44px;
     color: var(--muted);
-    font-size: 0.64rem;
+    font-size: 0.68rem;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.22em;
 }
 
+/* Slightly looser tracking at display sizes = more refined, less cramped */
 .hero h1 {
     max-width: 780px;
     font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(3.8rem, 8.5vw, 8rem);
+    font-size: clamp(3.6rem, 8vw, 7.6rem);
     font-weight: 400;
-    letter-spacing: -0.08em;
-    line-height: 0.94;
+    letter-spacing: -0.07em;
+    line-height: 0.92;
 }
 
 .hero h1 .highlight {
@@ -413,18 +416,19 @@ section {
 
 .dynamic-text {
     min-height: 2rem;
-    margin-top: 36px;
-    max-width: 42ch;
+    margin-top: 40px;
+    max-width: 44ch;
     color: var(--muted);
-    font-size: clamp(1rem, 1.6vw, 1.2rem);
-    letter-spacing: 0.015em;
+    font-size: clamp(1.05rem, 1.7vw, 1.25rem);
+    line-height: 1.55;
+    letter-spacing: 0.005em;
 }
 
 .hero-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 14px;
-    margin-top: 48px;
+    margin-top: 52px;
 }
 
 /* Hero image with orbit ring */
@@ -555,12 +559,14 @@ section {
 /* =========================================================
    09. ABOUT & STATS
 ========================================================= */
+/* Comfortable reading measure + line-height at ~65ch */
 .about-text {
-    max-width: 62ch;
-    font-size: 1.02rem;
+    max-width: 65ch;
+    font-size: 1.08rem;
     line-height: 1.8;
     color: var(--ink);
-    margin-bottom: 40px;
+    margin-bottom: 44px;
+    letter-spacing: 0.005em;
 }
 
 .skills-container {
@@ -597,34 +603,41 @@ section {
 .stats-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 28px;
-    padding: 56px 0;
+    gap: 40px;
+    padding: 64px 0;
     border-top: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
-    margin-top: 80px;
+    margin-top: 88px;
 }
 
+/* Flex column gives clean number-to-label stack (replaces margin-top hack) */
 .stat-item {
     text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
+/* Bigger + tighter leading = stronger numeric hierarchy */
 .stat-num {
     font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    font-size: clamp(2.4rem, 4.4vw, 3.8rem);
     color: var(--accent);
     display: block;
-    letter-spacing: -0.03em;
-    line-height: 1;
+    letter-spacing: -0.035em;
+    line-height: 0.95;
+    font-weight: 400;
 }
 
+/* Wider tracking + no margin (flex gap handles spacing now) */
 .stat-label {
     display: block;
     color: var(--muted);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    margin-top: 10px;
     font-weight: 500;
+    line-height: 1.4;
 }
 
 
@@ -795,11 +808,12 @@ section {
    12. CONTACT
 ========================================================= */
 #contact-text {
-    max-width: 56ch;
-    font-size: 1.05rem;
-    line-height: 1.75;
+    max-width: 60ch;
+    font-size: 1.08rem;
+    line-height: 1.8;
     color: var(--muted);
-    margin: 8px 0 40px;
+    margin: 12px 0 44px;
+    letter-spacing: 0.005em;
 }
 
 .contact-links {
@@ -813,8 +827,8 @@ section {
    13. FOOTER
 ========================================================= */
 .premium-footer {
-    margin-top: 80px;
-    padding: 48px 0;
+    margin-top: 96px;
+    padding: 56px 0;
     border-top: 1px solid var(--line);
 }
 
@@ -824,23 +838,29 @@ section {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 32px;
+    gap: 40px;
     flex-wrap: wrap;
 }
 
 .footer-brand .logo {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
+    display: block;
+    line-height: 1.2;
 }
 
 .footer-brand .tagline {
-    margin-top: 6px;
+    margin-top: 8px;
     color: var(--muted);
-    font-size: 0.78rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
 }
 
 .footer-copyright p {
     color: var(--muted);
-    font-size: 0.78rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
 }
 
 .footer-copyright .highlight-name {
@@ -851,10 +871,11 @@ section {
 .footer-status {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     color: var(--muted);
-    font-size: 0.74rem;
+    font-size: 0.75rem;
     letter-spacing: 0.02em;
+    line-height: 1.4;
 }
 
 /* Pulse dot with expanding ring — feels alive, not just blinking.
@@ -1097,6 +1118,7 @@ section {
    16. REDUCED MOTION
 ========================================================= */
 @media (prefers-reduced-motion: reduce) {
+
     .status-indicator,
     .status-indicator::after {
         animation: none;
@@ -1192,12 +1214,21 @@ section {
     }
 
     .hero {
-        padding-top: 130px;
-        gap: 48px;
+        padding: 160px 0 100px;
+        gap: 56px;
     }
 
     .hero::after {
         display: none;
+    }
+
+    .section-head {
+        margin-bottom: 44px;
+        padding-bottom: 18px;
+    }
+
+    .section-head h2 {
+        font-size: clamp(1.8rem, 5.5vw, 2.6rem);
     }
 }
 
@@ -1211,22 +1242,24 @@ section {
     }
 
     .hero h1 {
-        font-size: clamp(2.6rem, 11vw, 4.5rem);
+        font-size: clamp(2.8rem, 10vw, 4.8rem);
         letter-spacing: -0.055em;
+        line-height: 0.96;
     }
 
     .hero-content::before {
-        margin-bottom: 24px;
-        font-size: 0.6rem;
-        letter-spacing: 0.14em;
+        margin-bottom: 28px;
+        font-size: 0.62rem;
+        letter-spacing: 0.18em;
     }
 
     .dynamic-text {
-        margin-top: 24px;
+        margin-top: 28px;
+        line-height: 1.6;
     }
 
     .hero-buttons {
-        margin-top: 32px;
+        margin-top: 36px;
     }
 
     .hero-image {
@@ -1252,7 +1285,9 @@ section {
     }
 
     .section-head h2 {
-        font-size: clamp(1.6rem, 6vw, 2.4rem);
+        font-size: clamp(1.7rem, 6vw, 2.5rem);
+        letter-spacing: -0.03em;
+        line-height: 1.08;
     }
 
     .section-head .num {
@@ -1290,22 +1325,29 @@ section {
     .footer-container {
         flex-direction: column;
         text-align: center;
-        gap: 24px;
+        gap: 32px;
+    }
+
+    .premium-footer {
+        padding: 48px 0;
+        margin-top: 72px;
     }
 
     .stats-row {
         grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
-        padding: 44px 0;
-        margin-top: 60px;
+        gap: 36px 24px;
+        padding: 48px 0;
+        margin-top: 64px;
     }
 
     .stat-num {
-        font-size: 1.9rem;
+        font-size: 2rem;
+        line-height: 1;
     }
 
     .stat-label {
-        font-size: 0.64rem;
+        font-size: 0.66rem;
+        letter-spacing: 0.12em;
     }
 
     .hero-buttons {
