@@ -5,6 +5,9 @@
 (function () {
     'use strict';
 
+    // Lock scroll immediately — removed once loader fades out.
+    document.body.classList.add('is-loading');
+
     const gsap = window.gsap;
     const ScrollTrigger = window.ScrollTrigger;
     const hasGSAP = !!(gsap && ScrollTrigger);
@@ -94,6 +97,11 @@
         document.querySelectorAll('.hero-image img').forEach((el) => {
             el.style.clipPath = 'inset(0)';
         });
+
+        // Hide loader instantly — no 2s wait for users who opted out of motion
+        const loaderEl = document.getElementById('loader');
+        if (loaderEl) loaderEl.classList.add('is-hidden');
+        document.body.classList.remove('is-loading');
 
         // Progress bar fallback — GSAP won't run, so update directly
         // on scroll. No easing/scrub, but functional and honest.
@@ -235,7 +243,14 @@
         tick();
     }
 
-    const introTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+    /* Intro timeline — starts PAUSED. The loader plays it once the
+     loading screen fades out. This gives us clean sequencing:
+     loader (2s) → fade out → intro reveal (1.7s) → float.
+
+     GSAP .from() tweens still render their initial state immediately
+     even while the timeline is paused — so the hero stays hidden
+     behind the loader. When we .play(), everything animates. */
+    const introTl = gsap.timeline({ paused: true, defaults: { ease: 'power4.out' } });
 
     introTl
         .from('.hero-content h1', { y: 60, opacity: 0, duration: 1 }, 0.1)
@@ -249,24 +264,63 @@
         .from('.hero-buttons .btn', { y: 20, opacity: 0, duration: 0.6, stagger: 0.1 }, 1.05)
         .add(() => {
             typeName(() => setTimeout(startRoleRotation, 300));
-        }, 0.9);
+        }, 0.9)
+        /* Float starts 1.7s into the intro — after the clip-reveal
+           finishes. Animates the inner <img>, not the wrapper, so it
+           stays independent of pointer-tilt and scroll parallax. */
+        .add(() => {
+            gsap.to('.hero-image img', {
+                y: -14,
+                duration: 3.4,
+                ease: 'sine.inOut',
+                yoyo: true,
+                repeat: -1
+            });
+        }, 1.7)
+        /* After intro completes, recalc ScrollTrigger positions —
+           otherwise triggers created during load may be offset by
+           the intro's initial .from() states. */
+        .call(() => {
+            ScrollTrigger.refresh();
+        });
 
-    /* ----- Hero image — soft continuous float -----
-Animates the inner <img>, NOT the .hero-image wrapper.
-Why: the pointer-tilt targets .hero-image (x/y/rotation),
-and the scroll parallax targets .hero-image (yPercent).
-Floating the inner img keeps all three independent.
+    /* =========================================================
+       LOADING SCREEN
+       ~1.8s count + 0.45s fade = ~2.25s total. Then introTl plays.
+    ========================================================= */
+    const loader = document.getElementById('loader');
+    const loaderFill = document.querySelector('.loader-bar-fill');
+    const loaderCount = document.querySelector('.loader-count');
 
-delay 1.8s = waits for the intro clip-reveal to finish
-(clip reveal ends at ~1.7s) so we don't fight the intro. */
-    gsap.to('.hero-image img', {
-        y: -14,
-        duration: 3.4,
-        ease: 'sine.inOut',
-        yoyo: true,
-        repeat: -1,
-        delay: 1.8
-    });
+    if (loader) {
+        const counter = { v: 0 };
+
+        gsap.timeline()
+            .to(counter, {
+                v: 100,
+                duration: 1.8,
+                ease: 'power2.inOut',
+                onUpdate: () => {
+                    const val = Math.round(counter.v);
+                    if (loaderCount) loaderCount.textContent = val + '%';
+                    if (loaderFill) loaderFill.style.width = val + '%';
+                }
+            })
+            .to(loader, {
+                opacity: 0,
+                duration: 0.45,
+                ease: 'power2.out',
+                onStart: () => document.body.classList.remove('is-loading'),
+                onComplete: () => {
+                    loader.classList.add('is-hidden');
+                    loader.setAttribute('aria-hidden', 'true');
+                    introTl.play();
+                }
+            }, '+=0.15');
+    } else {
+        // No loader in DOM (edge case) — play intro immediately
+        introTl.play();
+    }
 
     /* =========================================================
        SECTION HEADINGS — SPLIT REVEAL

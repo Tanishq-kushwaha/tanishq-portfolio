@@ -1504,3 +1504,87 @@ a:focus:not(:focus-visible),
 button:focus:not(:focus-visible) {
     outline: none;
 }
+
+/* =========================================================
+   19. LOADING SCREEN
+
+   Editorial-style loader: brand → thin gradient bar → counter.
+   Theme-aware (uses existing vars).
+
+   - JS adds `is-loading` to <body> immediately → locks scroll
+   - JS fades loader out after ~2s → removes `is-loading`
+   - Reduced-motion users: loader hidden instantly (no 2s wait)
+   - `.is-hidden` = fully gone (visibility + pointer-events)
+========================================================= */
+body.is-loading {
+    overflow: hidden;
+}
+
+.loader {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    transition: opacity 0.45s ease, visibility 0.45s ease;
+}
+
+.loader.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    width: min(260px, 70vw);
+}
+
+.loader-brand {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.7rem;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+}
+
+.loader-brand .loader-dot {
+    color: var(--accent);
+}
+
+.loader-bar {
+    width: 100%;
+    height: 2px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+}
+
+.loader-bar-fill {
+    position: absolute;
+    inset: 0;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+    border-radius: inherit;
+    box-shadow: 0 0 12px var(--accent);
+    will-change: width;
+}
+
+.loader-count {
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loader {
+        transition: none;
+    }
+}
