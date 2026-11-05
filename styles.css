@@ -1,550 +1,823 @@
-/*
-    styles.css — Tani$hq Portfolio
-    ------------------------------
-    Sections:
-      1.  Root variables (light + dark)
-      2.  Global base
-      3.  Background layer (cosmic/aurora) — background.js ke saath milke chalta hai
-      4.  Header / Navbar
-      5.  Hero section (+ orbital ring)
-      6.  Buttons (translate-property hover, GSAP-friendly)
-      7.  Sections common
-      8.  Skills
-      9.  Project & certificate cards
-      10. Footer
-      11. Responsive
-      12. CSS fallback animations (GSAP available hone par JS hata deta hai)
-      13. Scroll progress
-      14. Keyboard focus
-      15. GSAP helpers
-      16. Reduced motion
-*/
+/* =========================================================
+   Tani$hq Portfolio — Modern Violet Theme
+   Single-file stylesheet. Flat surfaces, soft glow, editorial type.
 
-/* ============================================
-   1. ROOT VARIABLES
-============================================ */
+   Structure:
+   01. Theme variables (light + dark)
+   02. Reset & base
+   03. Background (canvas + mesh gradient)
+   04. Scroll progress
+   05. Header & navigation
+   06. Main layout & section framework
+   07. Hero
+   08. Marquee
+   09. About & stats
+   10. Projects
+   11. Certifications
+   12. Contact
+   13. Footer
+   14. Buttons
+   15. Custom cursor
+   16. Reduced motion
+   17. Responsive breakpoints (968 / 768 / 640)
+   ========================================================= */
+
+
+/* =========================================================
+   01. THEME VARIABLES
+   Light: warm cream + soft violet
+   Dark:  near-black + lavender glow
+========================================================= */
 :root {
-    --bg-main: #f8fafc;
-    --bg-section: #ffffff;
-    --bg-card: #f1f5f9;
-    --text-main: #0f172a;
-    --text-muted: #334155;
-    --accent: #6366f1;
-    --accent-hover: #4f46e5;
-    --border: #e2e8f0;
-    --nav-bg: rgba(248, 250, 252, 0.9);
-    --sticky-shadow: rgba(0, 0, 0, 0.08);
-    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    --card-hover-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.28);
-    --section-bg: rgba(255, 255, 255, 0.40);
-    --section-bg-soft: rgba(255, 255, 255, 0.15);
-    --section-bg-footer: rgba(255, 255, 255, 0.55);
-    --card-surface-1: rgba(255, 255, 255, 0.68);
-    --card-surface-2: rgba(255, 255, 255, 0.42);
-    --card-border: rgba(99, 102, 241, 0.18);
-    --card-border-hover: rgba(99, 102, 241, 0.55);
-    --card-inner-glow: rgba(160, 190, 255, 0.22);
+    color-scheme: light;
 
-    /* Shadows ko theme-aware banao */
-    --card-shadow: 0 4px 24px rgba(99, 102, 241, 0.08),
-        0 1px 3px rgba(0, 0, 0, 0.04);
-    --card-hover-shadow: 0 24px 55px -12px rgba(99, 102, 241, 0.35),
-        0 0 0 1px rgba(99, 102, 241, 0.12);
-    /* Glass navbar — light theme */
-    --nav-glass-top: rgba(255, 255, 255, 0.72);
-    --nav-glass-bottom: rgba(248, 250, 252, 0.42);
-    --nav-border: rgba(99, 102, 241, 0.12);
-    --nav-border-strong: rgba(99, 102, 241, 0.28);
+    /* Surfaces */
+    --bg: #faf8f5;
+    --surface: #f3eefb;
+    --surface-raised: #ffffff;
+
+    /* Text */
+    --ink: #1a1625;
+    --muted: #6b6480;
+
+    /* Borders */
+    --line: #e7e0f2;
+
+    /* Accent — soft violet */
+    --accent: #7c5cff;
+    --accent-strong: #5b3fd9;
+    --accent-soft: #efe9ff;
+
+    /* Navigation (glass) */
+    --nav-bg: rgba(250, 248, 245, 0.72);
+
+    /* Depth */
+    --shadow: 0 14px 36px rgba(124, 92, 255, 0.08);
+    --glow: 0 20px 60px rgba(124, 92, 255, 0.18);
+
+    /* Layout */
+    --max-width: 1160px;
 }
 
 [data-theme="dark"] {
-    --bg-main: #0a0a0a;
-    --bg-section: #121212;
-    --bg-card: #1a1a1a;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --accent: #8b5cf6;
-    --accent-hover: #7c3aed;
-    --border: #2a2a2a;
-    --nav-bg: rgba(10, 10, 10, 0.9);
-    --sticky-shadow: rgba(139, 92, 246, 0.25);
-    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    --card-hover-shadow: 0 20px 40px -12px rgba(139, 92, 246, 0.35);
-    --section-bg: rgba(15, 18, 30, 0.42);
-    --section-bg-soft: rgba(10, 10, 18, 0.18);
-    --section-bg-footer: rgba(15, 18, 30, 0.55);
-    /* Glass card system — dark theme (violet tinted) */
-    --card-surface-1: rgba(28, 26, 48, 0.55);
-    --card-surface-2: rgba(18, 16, 32, 0.42);
-    --card-border: rgba(139, 92, 246, 0.22);
-    --card-border-hover: rgba(139, 92, 246, 0.68);
-    --card-inner-glow: rgba(139, 92, 246, 0.18);
+    color-scheme: dark;
 
-    --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.45),
-        0 0 0 1px rgba(139, 92, 246, 0.06);
-    --card-hover-shadow: 0 24px 55px -12px rgba(139, 92, 246, 0.5),
-        0 0 42px rgba(139, 92, 246, 0.22),
-        0 0 0 1px rgba(139, 92, 246, 0.32);
-    /* Glass navbar — dark theme */
-    --nav-glass-top: rgba(16, 14, 28, 0.72);
-    --nav-glass-bottom: rgba(10, 10, 18, 0.42);
-    --nav-border: rgba(139, 92, 246, 0.14);
-    --nav-border-strong: rgba(139, 92, 246, 0.32);
+    --bg: #0b0c10;
+    --surface: #12131a;
+    --surface-raised: #171923;
+
+    --ink: #f0edf8;
+    --muted: #8b87a0;
+
+    --line: #232533;
+
+    --accent: #a78bfa;
+    --accent-strong: #c4b5fd;
+    --accent-soft: #241d3d;
+
+    --nav-bg: rgba(11, 12, 16, 0.72);
+
+    --shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+    --glow: 0 0 60px rgba(167, 139, 250, 0.35);
 }
 
-/* ============================================
-   2. GLOBAL BASE
-============================================ */
+
+/* =========================================================
+   02. RESET & BASE
+========================================================= */
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    scroll-behavior: smooth;
 }
 
 html {
-    /* body ka background-color yahin shift kiya taaki .bg-layer (z-index: -1)
-       uske upar render ho sake */
-    background-color: var(--bg-main);
-    transition: background-color 0.5s ease;
-    /* Fixed header ke liye anchor offset */
-    scroll-padding-top: 90px;
+    background: var(--bg);
+    color: var(--ink);
+    scroll-behavior: smooth;
+    scroll-padding-top: 96px;
 }
 
 body {
-    color: var(--text-main);
-    font-family: "Poppins", sans-serif;
-    transition: color 0.4s ease;
+    min-width: 320px;
     overflow-x: hidden;
-    line-height: 1.6;
-    /* Transparent rakha — base color html par hai */
-    background-color: transparent;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Poppins", "Segoe UI", sans-serif;
+    line-height: 1.7;
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 a {
+    color: inherit;
     text-decoration: none;
-    color: var(--text-main);
 }
 
-/* ============================================
-   3. BACKGROUND LAYER (Cosmic / Aurora)
-   - Fixed full-screen, content ke peeche
-   - theme ke hisaab se gradients badalte hain
-   - background.js canvas par particles draw karta hai
-============================================ */
+button {
+    font: inherit;
+}
+
+::selection {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+
+/* =========================================================
+   03. BACKGROUND LAYER
+   Canvas (particles) + mesh gradient behind it
+========================================================= */
 .bg-layer {
     position: fixed;
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    overflow: hidden;
-    background-color: var(--bg-main);
-    /* canvas fail ho to bhi base color dikhe */
-    transition: background-color 0.5s ease;
-    will-change: transform;
+    background: var(--bg);
 }
 
-.bg-gradient {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    /* Light theme: subtle dot grid — flat backgrounds ko texture deta hai */
-    background-image: radial-gradient(circle,
-            rgba(99, 102, 241, 0.07) 1px,
-            transparent 1.5px);
-    background-size: 32px 32px;
+/* Hide unused decorations. NOTE: .bg-layer::before is NOT here
+   because we use it for the mesh gradient below. */
+.bg-gradient,
+.bg-layer::after,
+.cursor-glow {
+    display: none !important;
 }
 
-/* Dark theme mein grid nahi — stars already depth de rahe hain */
-[data-theme="dark"] .bg-gradient {
-    background-image: none;
-}
-
-/* Light aurora — do soft blobs jo slowly drift karte hain */
-.bg-gradient::before,
-.bg-gradient::after {
+/* Mesh gradient — light mode */
+.bg-layer::before {
     content: "";
     position: absolute;
-    border-radius: 50%;
+    inset: 0;
     pointer-events: none;
-    will-change: transform;
+    background:
+        radial-gradient(ellipse 800px 600px at 15% 20%, rgba(124, 92, 255, 0.10), transparent 60%),
+        radial-gradient(ellipse 700px 500px at 85% 80%, rgba(255, 140, 200, 0.08), transparent 60%),
+        radial-gradient(ellipse 900px 600px at 50% 100%, rgba(100, 180, 255, 0.07), transparent 60%);
 }
 
-.bg-gradient::before {
-    width: 75vmax;
-    height: 75vmax;
-    top: -25%;
-    left: -20%;
-    background: radial-gradient(circle, rgba(160, 190, 255, 0.32) 0%, rgba(160, 190, 255, 0.08) 45%, transparent 70%);
-    animation: auroraDriftA 44s ease-in-out infinite alternate;
+/* Mesh gradient — dark mode (stronger, lavender glow) */
+[data-theme="dark"] .bg-layer::before {
+    background:
+        radial-gradient(ellipse 900px 700px at 15% 20%, rgba(124, 92, 255, 0.18), transparent 60%),
+        radial-gradient(ellipse 800px 600px at 85% 80%, rgba(167, 139, 250, 0.14), transparent 60%),
+        radial-gradient(ellipse 1000px 700px at 50% 100%, rgba(100, 140, 255, 0.10), transparent 60%);
 }
 
-.bg-gradient::after {
-    width: 65vmax;
-    height: 65vmax;
-    bottom: -20%;
-    right: -15%;
-    background: radial-gradient(circle, rgba(200, 170, 255, 0.26) 0%, rgba(200, 170, 255, 0.06) 45%, transparent 70%);
-    animation: auroraDriftB 52s ease-in-out infinite alternate;
-}
-
-/* Dark cosmic — violet + indigo nebula blobs */
-[data-theme="dark"] .bg-gradient::before {
-    background: radial-gradient(circle, rgba(120, 60, 220, 0.28) 0%, rgba(120, 60, 220, 0.06) 45%, transparent 70%);
-    animation-duration: 48s;
-}
-
-[data-theme="dark"] .bg-gradient::after {
-    background: radial-gradient(circle, rgba(50, 80, 200, 0.24) 0%, rgba(50, 80, 200, 0.05) 45%, transparent 70%);
-    animation-duration: 58s;
-}
-
+/* Canvas sits on top of the mesh (particles only, transparent bg) */
 #bg-canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    display: block;
-}
-
-/* ============================================
-   Light-theme-only: extra aurora depth
-   Dark theme apna nebula use karta hai, ye layers hidden rahenge
-============================================ */
-
-/* Top-right warm pink corner glow — soft "sunrise" feel */
-.bg-layer::before {
-    content: "";
-    position: absolute;
-    top: -15%;
-    right: -15%;
-    width: 60vmax;
-    height: 60vmax;
-    border-radius: 50%;
-    background: radial-gradient(circle,
-            rgba(255, 205, 230, 0.28) 0%,
-            rgba(255, 215, 235, 0.10) 40%,
-            transparent 70%);
-    pointer-events: none;
-    animation: cornerGlowPulse 10s ease-in-out infinite alternate;
-}
-
-@keyframes cornerGlowPulse {
-    from {
-        opacity: 0.65;
-        transform: scale(1);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1.08);
-    }
-}
-
-/* Bottom-left cyan aurora blob — teesra color, spectrum complete */
-.bg-layer::after {
-    content: "";
-    position: absolute;
-    bottom: -25%;
-    left: -18%;
-    width: 60vmax;
-    height: 60vmax;
-    border-radius: 50%;
-    background: radial-gradient(circle,
-            rgba(140, 220, 220, 0.24) 0%,
-            rgba(140, 220, 220, 0.07) 45%,
-            transparent 70%);
-    pointer-events: none;
-    animation: auroraDriftC 58s ease-in-out infinite alternate;
-}
-
-@keyframes auroraDriftC {
-    from {
-        transform: translate(0, 0) scale(1);
-    }
-
-    to {
-        transform: translate(5%, -4%) scale(1.10);
-    }
-}
-
-/* Dark theme mein in dono ko hide karo — dark ke paas apna nebula hai */
-[data-theme="dark"] .bg-layer::before,
-[data-theme="dark"] .bg-layer::after {
-    display: none;
-}
-
-@keyframes auroraDriftA {
-    from {
-        transform: translate(0, 0) scale(1);
-    }
-
-    to {
-        transform: translate(6%, 4%) scale(1.10);
-    }
-}
-
-@keyframes auroraDriftB {
-    from {
-        transform: translate(0, 0) scale(1);
-    }
-
-    to {
-        transform: translate(-5%, -3%) scale(1.08);
-    }
+    opacity: 0.12;
 }
 
 
-/* ============================================
-   3b. CURSOR GLOW FOLLOWER
-   Cursor ke saath chalne wali soft light —
-   sections ke translucent background se halke se dikhti hai.
-============================================ */
-
-.cursor-glow {
+/* =========================================================
+   04. SCROLL PROGRESS
+========================================================= */
+.scroll-progress {
     position: fixed;
+    inset: 0 auto auto 0;
+    z-index: 2000;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   05. HEADER & NAVIGATION
+========================================================= */
+header {
+    position: fixed;
+    z-index: 1000;
     top: 0;
     left: 0;
-    width: 380px;
-    height: 380px;
-    margin-left: -190px;
-    /* 380 ka half — glow center cursor par aaye */
-    margin-top: -190px;
-    border-radius: 50%;
-    pointer-events: none;
-    /* clicks ko block nahi karta */
-    z-index: 0;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    background: radial-gradient(circle,
-            rgba(99, 102, 241, 0.20) 0%,
-            rgba(139, 92, 246, 0.08) 35%,
-            transparent 70%);
-}
-
-[data-theme="dark"] .cursor-glow {
-    background: radial-gradient(circle,
-            rgba(139, 92, 246, 0.28) 0%,
-            rgba(99, 102, 241, 0.12) 40%,
-            transparent 72%);
-}
-
-body.cursor-active .cursor-glow {
-    opacity: 1;
-}
-
-/* Touch devices par cursor hi nahi — glow hide */
-@media (hover: none),
-(pointer: coarse) {
-    .cursor-glow {
-        display: none !important;
-    }
-}
-
-/* Reduced motion — bilkul disable */
-@media (prefers-reduced-motion: reduce) {
-    .cursor-glow {
-        display: none !important;
-    }
-}
-
-
-/* ============================================
-   4. HEADER / NAVBAR
-============================================ */
-header {
-    /* Glass navbar — cosmic/aurora background halke se peeche se dikhta hai */
-    background: linear-gradient(180deg,
-            var(--nav-glass-top) 0%,
-            var(--nav-glass-bottom) 100%);
-    padding: 15px 0;
-    position: fixed;
     width: 100%;
-    top: 0;
-    z-index: 1000;
-    backdrop-filter: blur(16px) saturate(160%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-    border-bottom: 1px solid var(--nav-border);
-    transition: background 0.4s ease,
-        padding 0.3s ease,
-        box-shadow 0.4s ease,
-        border-color 0.4s ease;
+    border-bottom: 1px solid transparent;
+    transition: background 0.25s ease, border-color 0.25s ease;
 }
 
-/* Sticky state — scroll karne par aur compact + deeper shadow */
+/* Sticky header: glass blur */
 header.sticky {
-    padding: 10px 0;
-    box-shadow: 0 8px 32px var(--sticky-shadow);
-    border-bottom-color: var(--nav-border-strong);
+    background: var(--nav-bg);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border-color: var(--line);
 }
-
 
 nav {
+    width: min(var(--max-width), calc(100% - 64px));
+    min-height: 82px;
+    margin: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+    gap: 28px;
 }
 
-.left {
-    font-size: 1.5rem;
+.left,
+.logo {
+    font-size: 1.35rem;
     font-weight: 700;
-    color: var(--accent);
-    /* Text glow — halke se breathing effect */
-    animation: logoGlow 4s ease-in-out infinite alternate;
-    transition: color 0.3s ease;
+    letter-spacing: -0.07em;
 }
 
-@keyframes logoGlow {
-    from {
-        text-shadow: 0 0 4px rgba(99, 102, 241, 0.0);
-    }
-
-    to {
-        text-shadow: 0 0 12px rgba(99, 102, 241, 0.55);
-    }
-}
-
-[data-theme="dark"] .left {
-    animation-name: logoGlowDark;
-}
-
-@keyframes logoGlowDark {
-    from {
-        text-shadow: 0 0 4px rgba(139, 92, 246, 0.0);
-    }
-
-    to {
-        text-shadow: 0 0 14px rgba(139, 92, 246, 0.75);
-    }
+.left::after {
+    content: " / PORTFOLIO";
+    margin-left: 10px;
+    color: var(--muted);
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
 }
 
 .nav-links {
     display: flex;
-    justify-content: center;
     align-items: center;
-}
-
-.nav-links li {
+    gap: clamp(16px, 2.5vw, 34px);
     list-style: none;
-    margin: 0 15px;
 }
 
-.nav-links li a {
-    color: var(--text-main);
+.nav-links a {
+    position: relative;
+    color: var(--muted);
+    font-size: 0.78rem;
     font-weight: 500;
-    transition: color 0.3s ease;
-    position: relative;
-    padding: 4px 0;
+    transition: color 0.2s ease;
 }
 
-/* Har link ke neeche 2px gradient bar — hover par center se khulta hai */
-.nav-links li a::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -2px;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
-    border-radius: 2px;
-    transform: translateX(-50%) scaleX(0);
-    transform-origin: 50%;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: none;
-}
-
-.nav-links li a:hover {
-    color: var(--accent);
-}
-
-.nav-links li a:hover::after {
-    transform: translateX(-50%) scaleX(1);
-}
-
-.nav-links li a.active {
-    color: var(--accent);
-    font-weight: 700;
-    position: relative;
-}
-
-.nav-links li a.active::after {
+.nav-links a::after {
     content: "";
     position: absolute;
     left: 0;
-    right: 0;
-    bottom: -6px;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
-    border-radius: 4px;
-    /* Active par hover underline pehle se visible */
-    transform: translateX(0) scaleX(1);
-    transform-origin: 50%;
-    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+    bottom: -7px;
+    width: 100%;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease;
 }
 
-/* Active link par hover karo — extra bar hide ho, active ki hi glow dikhe */
-.nav-links li a.active:hover::after {
-    transform: translateX(0) scaleX(1);
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--ink);
 }
 
+.nav-links a:hover::after,
+.nav-links a.active::after {
+    transform: scaleX(1);
+}
+
+/* Theme toggle — pill */
 .theme-btn {
-    background: var(--card-surface-2);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--card-border);
-    color: var(--accent);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    border-radius: 999px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
     cursor: pointer;
-    font-weight: 600;
-    font-family: inherit;
-    transition: background 0.3s ease,
-        border-color 0.3s ease,
-        color 0.3s ease,
-        box-shadow 0.3s ease;
+    font-size: 0.72rem;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .theme-btn:hover {
-    background: var(--accent);
     border-color: var(--accent);
-    color: #ffffff;
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
+    background: var(--accent-soft);
 }
 
-[data-theme="dark"] .theme-btn:hover {
-    box-shadow: 0 0 22px rgba(139, 92, 246, 0.5);
-}
-
+/* Hamburger (hidden on desktop) */
 .hamburger {
     display: none;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: transparent;
     cursor: pointer;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 5px;
-    z-index: 1100;
 }
 
 .hamburger span {
     display: block;
-    width: 25px;
-    height: 3px;
-    background-color: var(--accent);
-    border-radius: 2px;
-    transition: 0.3s ease;
+    width: 17px;
+    height: 1.5px;
+    background: var(--ink);
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-/* ============================================
-   5. HERO SECTION
-============================================ */
+
+/* =========================================================
+   06. MAIN LAYOUT & SECTION FRAMEWORK
+========================================================= */
+main {
+    width: min(var(--max-width), calc(100% - 64px));
+    margin: 0 auto;
+}
+
+section {
+    position: relative;
+    padding-block: clamp(80px, 12vh, 140px);
+}
+
+.section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    margin-bottom: 44px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+}
+
+.section-head .num {
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--accent);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+}
+
+.section-head h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: clamp(1.9rem, 3.6vw, 2.9rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.section-head h2 .highlight {
+    color: var(--accent);
+    font-style: italic;
+}
+
+
+/* =========================================================
+   07. HERO
+========================================================= */
+.hero {
+    position: relative;
+    min-height: min(880px, 100svh);
+    padding: 180px 0 130px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+    align-items: center;
+    gap: clamp(48px, 9vw, 130px);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-content::before {
+    content: "INDEPENDENT DEVELOPER  ·  KANPUR, INDIA";
+    display: block;
+    margin-bottom: 40px;
+    color: var(--muted);
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+}
+
+.hero h1 {
+    max-width: 780px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(3.8rem, 8.5vw, 8rem);
+    font-weight: 400;
+    letter-spacing: -0.08em;
+    line-height: 0.94;
+}
+
+.hero h1 .highlight {
+    color: var(--accent);
+}
+
 .cursor {
     color: var(--accent);
-    animation: blink 0.8s infinite;
+    animation: blink 1s steps(2, start) infinite;
 }
 
 @keyframes blink {
+    to {
+        visibility: hidden;
+    }
+}
+
+.dynamic-text {
+    min-height: 2rem;
+    margin-top: 36px;
+    max-width: 42ch;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    letter-spacing: 0.015em;
+}
+
+.hero-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 48px;
+}
+
+/* Hero image with orbit ring */
+.hero-image {
+    position: relative;
+    justify-self: end;
+    width: min(100%, 370px);
+}
+
+.hero-image::before {
+    content: "01";
+    position: absolute;
+    z-index: 2;
+    top: -22px;
+    left: -24px;
+    color: var(--accent);
+    font-family: Georgia, serif;
+    font-size: 1.1rem;
+}
+
+.hero-image img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: center;
+    filter: saturate(0.78);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    will-change: clip-path;
+}
+
+.hero-image img:hover {
+    filter: saturate(1);
+}
+
+.hero-orbit {
+    position: absolute;
+    inset: 14px -14px -14px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.hero-orbit::before {
+    content: "";
+    position: absolute;
+    top: 12%;
+    right: -4px;
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+}
+
+/* Scroll cue */
+.hero::after {
+    content: "SCROLL ↓";
+    position: absolute;
+    bottom: 42px;
+    left: 0;
+    color: var(--muted);
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.24em;
+}
+
+
+/* =========================================================
+   08. MARQUEE
+========================================================= */
+.marquee {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 26px 0;
+    margin-top: 40px;
+    display: flex;
+    white-space: nowrap;
+}
+
+.marquee-track {
+    display: flex;
+    flex-shrink: 0;
+    gap: 56px;
+    padding-right: 56px;
+    will-change: transform;
+}
+
+.marquee-item {
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-size: clamp(1.5rem, 3.2vw, 2.6rem);
+    color: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 56px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.marquee-item::after {
+    content: "✳";
+    color: var(--accent);
+    font-size: 0.6em;
+    font-style: normal;
+}
+
+
+/* =========================================================
+   09. ABOUT & STATS
+========================================================= */
+.about-text {
+    max-width: 62ch;
+    font-size: 1.02rem;
+    line-height: 1.8;
+    color: var(--ink);
+    margin-bottom: 40px;
+}
+
+.skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.skill-tag {
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    font-size: 0.78rem;
+    letter-spacing: 0.01em;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.skill-tag:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+    padding: 56px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-top: 80px;
+}
+
+.stat-item {
+    text-align: left;
+}
+
+.stat-num {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    color: var(--accent);
+    display: block;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.stat-label {
+    display: block;
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   10. PROJECTS — bento grid
+========================================================= */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.project-card {
+    position: relative;
+    padding: 32px 28px;
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, translate 0.3s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.project-card:hover {
+    border-color: var(--accent);
+    translate: 0 -4px;
+    box-shadow: var(--shadow), var(--glow);
+}
+
+.project-card::before {
+    content: attr(data-num);
+    position: absolute;
+    top: 24px;
+    right: 28px;
+    font-family: Georgia, serif;
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+}
+
+.project-card h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 12px;
+    max-width: 26ch;
+}
+
+.project-card p {
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.65;
+    margin-bottom: 24px;
+}
+
+/* Featured first card — full width */
+.projects-grid .project-card:first-child {
+    grid-column: 1 / -1;
+    padding: 48px 44px;
+}
+
+.projects-grid .project-card:first-child h3 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    max-width: 22ch;
+}
+
+.projects-grid .project-card:first-child p {
+    font-size: 0.98rem;
+    max-width: 60ch;
+}
+
+.project-links {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.project-links .btn-small {
+    min-height: 40px;
+    padding: 0 16px;
+    font-size: 0.72rem;
+}
+
+
+/* =========================================================
+   11. CERTIFICATIONS
+========================================================= */
+.certificates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+.cert-card {
+    padding: 28px 26px;
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, translate 0.3s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.cert-card:hover {
+    border-color: var(--accent);
+    translate: 0 -4px;
+    box-shadow: var(--shadow), var(--glow);
+}
+
+.cert-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.cert-card p {
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+}
+
+.cert-card .btn-small {
+    align-self: flex-start;
+    margin-top: 16px;
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 0.7rem;
+}
+
+
+/* =========================================================
+   12. CONTACT
+========================================================= */
+#contact-text {
+    max-width: 56ch;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin: 8px 0 40px;
+}
+
+.contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+
+/* =========================================================
+   13. FOOTER
+========================================================= */
+.premium-footer {
+    margin-top: 80px;
+    padding: 48px 0;
+    border-top: 1px solid var(--line);
+}
+
+.footer-container {
+    width: min(var(--max-width), calc(100% - 64px));
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.footer-brand .logo {
+    font-size: 1.2rem;
+}
+
+.footer-brand .tagline {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.footer-copyright p {
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.footer-copyright .highlight-name {
+    color: var(--ink);
+    font-weight: 500;
+}
+
+.footer-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.74rem;
+    letter-spacing: 0.02em;
+}
+
+/* Pulse dot with soft violet glow */
+.status-indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft), 0 0 16px var(--accent);
+    animation: pulse-status 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse-status {
 
     0%,
     100% {
@@ -552,581 +825,222 @@ nav {
     }
 
     50% {
-        opacity: 0;
+        opacity: 0.45;
     }
 }
 
-.dynamic-text {
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: var(--text-muted);
-    min-height: 35px;
-    margin-bottom: 28px;
-}
 
-.hero {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 100px 20px 60px;
-    gap: 40px;
-    perspective: 1200px;
-    /* GSAP tilt ke liye 3D space */
-}
-
-.hero-content {
-    flex: 1;
-}
-
-.hero h1 {
-    font-size: 3.4rem;
-    margin-bottom: 12px;
-    line-height: 1.15;
-    letter-spacing: -0.5px;
-}
-
-.highlight {
-    color: var(--accent);
-}
-
-.hero-buttons {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-/* Hero image container */
-.hero-image {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.hero-image img {
-    width: 320px;
-    height: 320px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 4px solid var(--accent);
-    box-shadow:
-        0 0 0 10px var(--bg-main),
-        0 0 50px rgba(99, 102, 241, 0.35);
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
-    position: relative;
-    z-index: 1;
-}
-
-.hero-image img:hover {
-    transform: scale(1.04);
-    box-shadow:
-        0 0 0 10px var(--bg-main),
-        0 0 60px rgba(99, 102, 241, 0.5);
-}
-
-/* Soft glow behind photo — subtle pulse */
-.hero-image::before {
-    content: "";
-    position: absolute;
-    inset: -15px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, transparent 70%);
-    z-index: 0;
-    animation: heroGlowPulse 6s ease-in-out infinite alternate;
-}
-
-@keyframes heroGlowPulse {
-    from {
-        transform: scale(0.95);
-        opacity: 0.7;
-    }
-
-    to {
-        transform: scale(1.05);
-        opacity: 1;
-    }
-}
-
-/* Orbital ring — image ke around ghoomta hua dot */
-.hero-orbit {
-    position: absolute;
-    inset: -30px;
-    border-radius: 50%;
-    border: 1px dashed rgba(99, 102, 241, 0.28);
-    z-index: 0;
-    pointer-events: none;
-    animation: orbitSpin 30s linear infinite;
-}
-
-.hero-orbit::before {
-    content: "";
-    position: absolute;
-    top: -5px;
-    left: 50%;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 14px var(--accent), 0 0 24px rgba(139, 92, 246, 0.5);
-    transform: translateX(-50%);
-}
-
-@keyframes orbitSpin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ============================================
-   6. BUTTONS
-   - `translate` property CSS hover lift ke liye
-     (GSAP magnetic transform ke saath compose hota hai)
-============================================ */
+/* =========================================================
+   14. BUTTONS — pill shape
+   Primary: soft violet gradient
+   Outline: transparent with border
+========================================================= */
 .btn,
 .btn-small {
-    padding: 12px 28px;
-    background-color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 22px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
     color: #ffffff;
-    border-radius: 8px;
+    font-size: 0.78rem;
     font-weight: 600;
-    transition: translate 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
-    border: none;
-    cursor: pointer;
-    display: inline-block;
-    letter-spacing: 0.3px;
-}
-
-.btn-small {
-    padding: 9px 20px;
-    font-size: 0.9rem;
+    letter-spacing: 0.015em;
+    transition:
+        box-shadow 0.25s ease,
+        translate 0.25s ease,
+        filter 0.25s ease,
+        border-color 0.25s ease,
+        color 0.25s ease,
+        background 0.25s ease;
 }
 
 .btn:hover,
 .btn-small:hover {
-    background-color: var(--accent-hover);
-    translate: 0 -3px;
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    box-shadow: var(--glow);
+    translate: 0 -2px;
+    filter: brightness(1.06);
 }
 
+/* Dark mode: lavender accent is light — dark text on it */
+[data-theme="dark"] .btn,
+[data-theme="dark"] .btn-small {
+    color: #1a1625;
+}
+
+/* Outline variant — overrides above */
 .btn.outline,
 .btn-small.outline {
-    background-color: transparent;
-    color: var(--accent);
-    border: 1.5px solid var(--accent);
+    background: transparent;
+    border-color: var(--line);
+    color: var(--ink);
+    box-shadow: none;
 }
 
 .btn.outline:hover,
 .btn-small.outline:hover {
-    background-color: var(--accent);
-    color: #ffffff;
-    translate: 0 -3px;
-}
-
-/* ============================================
-   7. SECTIONS COMMON
-============================================ */
-.about-section,
-.certificates-section,
-.contact-section {
-    padding: 45px 20px;
-    /* Pehle solid --bg-section tha — cosmic bg block ho raha tha.
-       Ab translucent — canvas + aurora through dikhte hain. */
-    background-color: var(--section-bg);
-    text-align: center;
-    position: relative;
-    transition: background-color 0.4s ease;
-}
-
-.projects-section {
-    padding: 90px 20px;
-    /* Projects section aur bhi halka — cosmic zyada visible */
-    background-color: var(--section-bg-soft);
-    text-align: center;
-    position: relative;
-    transition: background-color 0.4s ease;
-}
-
-h2 {
-    font-size: 2.5rem;
-    margin-bottom: 16px;
-    color: var(--text-main);
-    letter-spacing: -0.5px;
-}
-
-p {
-    color: var(--text-muted);
-    line-height: 1.7;
-}
-
-.about-content p,
-.contact-section p {
-    max-width: 800px;
-    margin: 0 auto 35px auto;
-    font-size: 1.1rem;
-}
-
-/* ============================================
-   8. SKILLS
-============================================ */
-.skills-container {
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.skill-tag {
-    background: linear-gradient(135deg,
-            var(--card-surface-1) 0%,
-            var(--card-surface-2) 100%);
-    backdrop-filter: blur(8px) saturate(140%);
-    -webkit-backdrop-filter: blur(8px) saturate(140%);
-    color: var(--text-main);
-    padding: 11px 22px;
-    border: 1px solid var(--card-border);
-    border-radius: 50px;
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: translate 0.3s ease,
-        background 0.3s ease,
-        box-shadow 0.3s ease,
-        color 0.3s ease,
-        border-color 0.3s ease;
-    box-shadow: var(--card-shadow);
-}
-
-.skill-tag:hover {
-    /* background shorthand use karo taaki gradient properly override ho */
-    background: var(--accent);
-    color: #ffffff;
     border-color: var(--accent);
-    translate: 0 -4px;
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
-}
-
-/* ============================================
-   9. PROJECT & CERTIFICATE CARDS
-============================================ */
-.projects-grid,
-.certificates-grid {
-    display: flex;
-    justify-content: center;
-    gap: 28px;
-    flex-wrap: wrap;
-    max-width: 1100px;
-    margin: 40px auto 0;
-}
-
-.project-card,
-.cert-card {
-    /* Glassmorphism: semi-transparent gradient + backdrop blur
-       = cosmic/aurora background card ke peeche se dikhta hai */
-    background: linear-gradient(135deg,
-            var(--card-surface-1) 0%,
-            var(--card-surface-2) 100%);
-    backdrop-filter: blur(14px) saturate(150%);
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
-    /* Safari */
-    padding: 28px;
-    border-radius: 18px;
-    width: 340px;
-    text-align: left;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.35s ease,
-        border-color 0.35s ease;
-    border: 1px solid var(--card-border);
-    box-shadow: var(--card-shadow);
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    /* ::after ko card ke andar hi rakhne ke liye */
-}
-
-.cert-card {
-    padding: 24px;
-    width: 310px;
-}
-
-.project-card:hover,
-.cert-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: var(--card-hover-shadow);
-    border-color: var(--card-border-hover);
-}
-
-
-/* Dark theme mein hover par card ke bahar soft violet halo */
-[data-theme="dark"] .project-card:hover,
-[data-theme="dark"] .cert-card:hover {
-    filter: drop-shadow(0 0 24px rgba(139, 92, 246, 0.25));
-}
-
-
-.project-card::before,
-.cert-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    /* Center bright, edges fade — solid line se zyada elegant */
-    background: linear-gradient(90deg,
-            transparent 0%,
-            var(--accent) 25%,
-            var(--accent-hover) 50%,
-            var(--accent) 75%,
-            transparent 100%);
-    transform: scaleX(0);
-    transform-origin: 50%;
-    transition: transform 0.5s ease;
-    z-index: 2;
-}
-
-.project-card:hover::before,
-.cert-card:hover::before {
-    transform: scaleX(1);
-}
-
-/* Top-left se aane wali "glass catching light" glow */
-.project-card::after,
-.cert-card::after {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 25% 20%,
-            var(--card-inner-glow) 0%,
-            transparent 45%);
-    pointer-events: none;
-    z-index: -1;
-    opacity: 0.7;
-    transition: opacity 0.4s ease, transform 0.6s ease;
-}
-
-.project-card:hover::after,
-.cert-card:hover::after {
-    opacity: 1;
-    transform: scale(1.05);
-}
-
-.project-card h3,
-.cert-card h3 {
-    color: var(--text-main);
-    font-size: 1.35rem;
-    margin-bottom: 12px;
-    font-weight: 600;
-}
-
-.cert-card h3 {
-    font-size: 1.2rem;
-    margin-bottom: 8px;
-}
-
-.project-card p,
-.cert-card p {
-    font-size: 0.95rem;
-    margin-bottom: 18px;
-}
-
-.project-links {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    margin-top: 20px;
-}
-
-.contact-links {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.mt-15 {
-    margin-top: 15px;
-    display: inline-block;
-}
-
-/* ============================================
-   10. FOOTER
-============================================ */
-.premium-footer {
-    background-color: var(--section-bg-footer);
-    border-top: 1px solid var(--border);
-    padding: 60px 20px 30px;
-    margin-top: 80px;
-    position: relative;
-    overflow: hidden;
-    transition: background-color 0.4s ease;
-}
-
-.footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 30px;
-}
-
-.footer-brand .logo {
-    font-size: 1.8rem;
-    font-weight: 800;
-    letter-spacing: -1px;
-}
-
-.footer-brand .tagline {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-top: 5px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.footer-copyright p {
-    font-size: 0.95rem;
-    color: var(--text-main);
-    font-weight: 300;
-}
-
-.highlight-name {
     color: var(--accent);
-    font-weight: 600;
-    border-bottom: 2px solid var(--accent);
+    background: transparent;
+    filter: none;
+    box-shadow: 0 0 0 4px var(--accent-soft);
 }
 
-.footer-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--bg-card);
-    padding: 8px 16px;
-    border-radius: 50px;
-    border: 1px solid var(--border);
-}
 
-.status-indicator {
-    width: 8px;
-    height: 8px;
-    background-color: #10b981;
-    border-radius: 50%;
-    box-shadow: 0 0 10px #10b981;
-    animation: pulse 2s infinite;
-}
+/* =========================================================
+   15. CUSTOM CURSOR (desktop only)
+========================================================= */
+@media (hover: hover) and (pointer: fine) {
 
-@keyframes pulse {
-    0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    body,
+    body * {
+        cursor: none !important;
     }
 
-    70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    input,
+    textarea,
+    select {
+        cursor: text !important;
     }
 
-    100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    .cursor-dot,
+    .cursor-ring {
+        position: fixed;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 9999;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        will-change: transform;
+    }
+
+    .cursor-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--accent);
+        mix-blend-mode: difference;
+    }
+
+    .cursor-ring {
+        width: 42px;
+        height: 42px;
+        border: 1.5px solid var(--accent);
+        transition:
+            width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+            height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+            background 0.35s ease,
+            border-color 0.35s ease;
+        mix-blend-mode: difference;
+    }
+
+    .cursor-ring.hover {
+        width: 74px;
+        height: 74px;
+        background: rgba(124, 92, 255, 0.18);
     }
 }
 
-.footer-status span {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-muted);
+@media (hover: none),
+(prefers-reduced-motion: reduce) {
+
+    .cursor-dot,
+    .cursor-ring {
+        display: none;
+    }
 }
 
-/* ============================================
-   11. RESPONSIVE
-============================================ */
-@media (max-width: 768px) {
+
+/* =========================================================
+   16. REDUCED MOTION
+========================================================= */
+@media (prefers-reduced-motion: reduce) {
+    .status-indicator {
+        animation: none;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+
+/* =========================================================
+   17. RESPONSIVE
+========================================================= */
+
+/* ----- 968px: tablet — activate hamburger nav -----
+   NOTE: THIS BLOCK WAS MISSING EARLIER. Without it,
+   clicking the hamburger does nothing because .nav-links
+   had no mobile styles. */
+@media (max-width: 968px) {
+
+    nav,
+    main,
+    .footer-container {
+        width: calc(100% - 40px);
+    }
+
+    nav {
+        min-height: 72px;
+    }
+
+    .left::after {
+        display: none;
+    }
+
     .hamburger {
         display: flex;
     }
 
-    nav {
-        flex-direction: row;
-        justify-content: space-between;
-    }
-
     .nav-links {
-
-        /* Glass drawer — but text readability ke liye thoda zyada opaque */
-        background: linear-gradient(180deg,
-                var(--card-surface-1) 0%,
-                var(--card-surface-2) 100%);
-        backdrop-filter: blur(20px) saturate(160%);
-        -webkit-backdrop-filter: blur(20px) saturate(160%);
-        border-left: 1px solid var(--card-border);
-
         position: fixed;
-        right: -100%;
-        top: 0;
-        height: 100vh;
-        width: 70%;
-
+        top: 72px;
+        left: 0;
+        right: 0;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 30px;
-        transition: 0.5s ease;
-        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-        z-index: 1050;
+        align-items: stretch;
+        gap: 0;
+        padding: 8px 0;
+        background: var(--bg);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        transform: translateY(-120%);
+        opacity: 0;
+        pointer-events: none;
+        transition:
+            transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.3s ease;
+        max-height: calc(100vh - 72px);
+        overflow-y: auto;
     }
 
     .nav-links.active {
-        right: 0;
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
     }
 
-    .hero {
-        flex-direction: column-reverse;
-        min-height: auto;
-        padding: 140px 20px 70px;
-        text-align: center;
-        gap: 30px;
+    .nav-links li {
+        width: 100%;
     }
 
-    .hero-image {
-        margin-bottom: 10px;
+    .nav-links a {
+        display: block;
+        padding: 14px 24px;
+        font-size: 0.85rem;
     }
 
-    .hero-image img {
-        width: 240px;
-        height: 240px;
+    .nav-links a::after {
+        display: none;
     }
 
-    /* Chhoti screen par orbit ka radius kam */
-    .hero-orbit {
-        inset: -20px;
-    }
-
-    .hero-buttons {
-        justify-content: center;
-    }
-
-    .hero h1 {
-        font-size: 2.4rem;
-    }
-
-    .dynamic-text {
-        font-size: 1.15rem;
-    }
-
+    /* Hamburger → X animation */
     .hamburger.active span:nth-child(1) {
-        transform: rotate(45deg) translate(5px, 6px);
+        transform: translateY(6.5px) rotate(45deg);
     }
 
     .hamburger.active span:nth-child(2) {
@@ -1134,131 +1048,169 @@ p {
     }
 
     .hamburger.active span:nth-child(3) {
-        transform: rotate(-45deg) translate(5px, -6px);
+        transform: translateY(-6.5px) rotate(-45deg);
     }
 
-    .project-card,
-    .cert-card {
-        width: 100%;
-        max-width: 360px;
+    .hero {
+        padding-top: 130px;
+        gap: 48px;
     }
 
-    .footer-container {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .footer-status {
-        order: -1;
-    }
-}
-
-/* Bahut chhoti screen par orbit hide */
-@media (max-width: 400px) {
-    .hero-orbit {
+    .hero::after {
         display: none;
     }
 }
 
-/* ============================================
-   12. CSS FALLBACK ANIMATIONS
-   (GSAP load hone par JS .autoshow hata deta hai)
-============================================ */
-.autoshow {
-    animation: text-appear both;
-    animation-timeline: view();
-    animation-range: entry 15% cover 40%;
-}
-
-@keyframes text-appear {
-    from {
-        opacity: 0;
-        transform: translateY(80px);
+/* ----- 768px: hero stacks, projects single column ----- */
+@media (max-width: 768px) {
+    .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding: 120px 0 60px;
+        gap: 40px;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .hero h1 {
+        font-size: clamp(2.6rem, 11vw, 4.5rem);
+        letter-spacing: -0.055em;
+    }
+
+    .hero-content::before {
+        margin-bottom: 24px;
+        font-size: 0.6rem;
+        letter-spacing: 0.14em;
+    }
+
+    .dynamic-text {
+        margin-top: 24px;
+    }
+
+    .hero-buttons {
+        margin-top: 32px;
+    }
+
+    .hero-image {
+        justify-self: start;
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .hero-image::before {
+        top: -18px;
+        left: -18px;
+        font-size: 1rem;
+    }
+
+    .hero-orbit {
+        inset: 10px -10px -10px 10px;
+    }
+
+    .section-head {
+        gap: 12px;
+        margin-bottom: 32px;
+        padding-bottom: 14px;
+    }
+
+    .section-head h2 {
+        font-size: clamp(1.6rem, 6vw, 2.4rem);
+    }
+
+    .section-head .num {
+        font-size: 0.75rem;
+    }
+
+    .projects-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .projects-grid .project-card:first-child {
+        padding: 32px 24px;
+    }
+
+    .projects-grid .project-card:first-child h3 {
+        font-size: clamp(1.4rem, 5vw, 1.8rem);
+    }
+
+    .marquee {
+        padding: 20px 0;
+    }
+
+    .marquee-track {
+        gap: 40px;
+        padding-right: 40px;
+    }
+
+    .marquee-item {
+        gap: 40px;
     }
 }
 
-/* IntersectionObserver fallback (jab GSAP available na ho) */
-.reveal-card {
-    opacity: 0;
-    transform: translateY(24px) scale(0.985);
-    transition: opacity 620ms cubic-bezier(.16, .84, .31, 1),
-        transform 620ms cubic-bezier(.16, .84, .31, 1);
-    will-change: opacity, transform;
-}
-
-.reveal-card.visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-}
-
-/* ============================================
-   13. SCROLL PROGRESS BAR
-============================================ */
-.scroll-progress {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
-    transform: scaleX(0);
-    transform-origin: 0 50%;
-    z-index: 2000;
-    pointer-events: none;
-    will-change: transform;
-}
-
-/* ============================================
-   14. KEYBOARD FOCUS
-============================================ */
-a:focus-visible,
-button:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-    border-radius: 4px;
-}
-
-/* ============================================
-   15. GSAP HELPERS
-============================================ */
-/* Jab GSAP transform control kare to CSS transition band */
-.animating-gsap {
-    transition: none !important;
-}
-
-/* Magnetic buttons ke liye hint */
-.hero-buttons .btn,
-.contact-links .btn {
-    will-change: transform;
-    transform-origin: center center;
-}
-
-/* ============================================
-   16. REDUCED MOTION
-============================================ */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        scroll-behavior: auto !important;
+/* ----- 640px: footer stacks, stats 2-column ----- */
+@media (max-width: 640px) {
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 24px;
     }
 
-    .autoshow,
-    .cursor,
-    .status-indicator,
-    .hero-orbit,
-    .hero-image::before,
-    .bg-gradient::before,
-    .bg-gradient::after {
-        animation: none !important;
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        padding: 44px 0;
+        margin-top: 60px;
     }
 
-    .reveal-card {
-        transition: none;
-        opacity: 1;
-        transform: none;
+    .stat-num {
+        font-size: 1.9rem;
+    }
+
+    .stat-label {
+        font-size: 0.64rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .hero-buttons .btn {
+        width: 100%;
+    }
+
+    .contact-links {
+        flex-direction: column;
+    }
+
+    .contact-links .btn {
+        width: 100%;
+    }
+
+    .project-card,
+    .cert-card {
+        padding: 24px 20px;
+    }
+
+    .projects-grid .project-card:first-child {
+        padding: 28px 20px;
+    }
+
+    .project-card::before {
+        top: 18px;
+        right: 20px;
+        font-size: 0.72rem;
+    }
+
+    .marquee {
+        padding: 16px 0;
+    }
+
+    .marquee-track {
+        gap: 28px;
+        padding-right: 28px;
+    }
+
+    .marquee-item {
+        font-size: 1.2rem;
+        gap: 28px;
     }
 }

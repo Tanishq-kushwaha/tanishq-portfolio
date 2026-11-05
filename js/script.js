@@ -1,640 +1,413 @@
 /* =========================================================
-   js/script.js
-   Portfolio UI + GSAP animations.
-
-   Changes vs previous version:
-   - Theme set ho raha hai <html> par (documentElement) — flash prevention
-   - Har theme change par `themechange` CustomEvent dispatch hota hai (background.js sunta hai)
-   - Magnetic button pull thoda kam, duration thoda smooth
-
-   Features:
-   - Sticky header + active nav link
-   - Dark / Light theme (localStorage)
-   - Typed name + rotating roles
-   - Mobile hamburger menu
-   - GSAP Core + ScrollTrigger animations
-   - IntersectionObserver fallback (agar GSAP load na ho)
-   - prefers-reduced-motion support
+   script.js — Advanced motion layer
+   Custom cursor • split reveals • marquee • 3D tilt • skew
 ========================================================= */
-
 (function () {
     'use strict';
 
-    /* -----------------------------------------------------
-       1. Capability detection
-    ----------------------------------------------------- */
     const gsap = window.gsap;
     const ScrollTrigger = window.ScrollTrigger;
-    const gsapReady = !!gsap;
-    const scrollTriggerReady = gsapReady && !!ScrollTrigger;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hasGSAP = !!(gsap && ScrollTrigger);
 
-    if (scrollTriggerReady) {
+    if (hasGSAP) {
         gsap.registerPlugin(ScrollTrigger);
         ScrollTrigger.config({ ignoreMobileResize: true });
     }
 
-    // Safe localStorage wrapper
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isFine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    /* ---------- Storage ---------- */
     const storage = {
-        get(key) {
-            try { return window.localStorage.getItem(key); } catch (err) { return null; }
-        },
-        set(key, value) {
-            try { window.localStorage.setItem(key, value); } catch (err) { /* ignore */ }
-        }
+        get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+        set(k, v) { try { localStorage.setItem(k, v); } catch { } }
     };
 
-    /* -----------------------------------------------------
-       2. Sticky header
-    ----------------------------------------------------- */
-    const header = document.querySelector('header');
-    const syncHeader = () => header.classList.toggle('sticky', window.scrollY > 0);
-    window.addEventListener('scroll', syncHeader, { passive: true });
-    syncHeader();
-
-    /* -----------------------------------------------------
-       3. Theme toggle
-       - Attribute <html> par set hota hai (head script flash rokta hai)
-       - CustomEvent `themechange` dispatch hota hai taaki background.js update ho
-    ----------------------------------------------------- */
+    /* ---------- Theme ---------- */
     const themeBtn = document.getElementById('theme-toggle');
-    const rootElement = document.documentElement;
+    const root = document.documentElement;
 
     const setTheme = (theme) => {
         const isDark = theme === 'dark';
-
         if (isDark) {
-            rootElement.setAttribute('data-theme', 'dark');
+            root.setAttribute('data-theme', 'dark');
             themeBtn.textContent = '☀️ Light Mode';
-            storage.set('theme', 'dark');
         } else {
-            rootElement.removeAttribute('data-theme');
+            root.removeAttribute('data-theme');
             themeBtn.textContent = '🌙 Dark Mode';
-            storage.set('theme', 'light');
         }
-
-        // Background ko batayein theme change hui
+        storage.set('theme', isDark ? 'dark' : 'light');
         document.dispatchEvent(new CustomEvent('themechange', {
             detail: { theme: isDark ? 'dark' : 'light' }
         }));
     };
 
     setTheme(storage.get('theme') || 'light');
-
     themeBtn.addEventListener('click', () => {
-        const isDark = rootElement.getAttribute('data-theme') === 'dark';
-        setTheme(isDark ? 'light' : 'dark');
+        setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     });
 
-    /* -----------------------------------------------------
-       4. Hero typed name + rotating roles
-    ----------------------------------------------------- */
-    const nameElement = document.getElementById('typed-name');
-    const roleElement = document.getElementById('dynamic-role');
-    const fullName = 'Tanishq Kushwaha';
-    const roles = ['Junior Software Developer', 'Frontend Developer', 'Problem Solver'];
+    /* ---------- Sticky header ---------- */
+    const header = document.querySelector('header');
+    const onScroll = () => header.classList.toggle('sticky', window.scrollY > 0);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
 
-    let nameIndex = 0;
-    let roleIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let typingStarted = false;
-
-    function typeName() {
-        if (nameIndex < fullName.length) {
-            nameElement.textContent += fullName.charAt(nameIndex);
-            nameIndex += 1;
-            window.setTimeout(typeName, 120);
-        } else {
-            window.setTimeout(startDynamicRoles, 500);
-        }
-    }
-
-    function startDynamicRoles() {
-        const currentRole = roles[roleIndex];
-
-        if (isDeleting) {
-            roleElement.textContent = currentRole.substring(0, charIndex - 1);
-            charIndex -= 1;
-        } else {
-            roleElement.textContent = currentRole.substring(0, charIndex + 1);
-            charIndex += 1;
-        }
-
-        let typeSpeed = isDeleting ? 50 : 100;
-
-        if (!isDeleting && charIndex === currentRole.length) {
-            typeSpeed = 2000;
-            isDeleting = true;
-        } else if (isDeleting && charIndex === 0) {
-            isDeleting = false;
-            roleIndex = (roleIndex + 1) % roles.length;
-            typeSpeed = 500;
-        }
-
-        window.setTimeout(startDynamicRoles, typeSpeed);
-    }
-
-    function startTypingOnce() {
-        if (typingStarted) return;
-        typingStarted = true;
-        typeName();
-    }
-
-    if (prefersReducedMotion) {
-        // Reduced motion: typing skip, final text
-        nameElement.textContent = fullName;
-        roleElement.textContent = roles[0];
-    } else {
-        // Fallback: agar GSAP fail ho to load par 900ms baad start
-        window.addEventListener('load', () => window.setTimeout(startTypingOnce, 900));
-    }
-
-    /* -----------------------------------------------------
-       5. Mobile navigation
-    ----------------------------------------------------- */
+    /* ---------- Mobile nav ---------- */
     const hamburger = document.getElementById('hamburger');
     const navMenu = document.getElementById('nav-menu');
 
-    hamburger.addEventListener('click', () => {
+    hamburger?.addEventListener('click', () => {
         hamburger.classList.toggle('active');
         navMenu.classList.toggle('active');
     });
 
     document.querySelectorAll('.nav-links a').forEach((link) => {
         link.addEventListener('click', () => {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
+            hamburger?.classList.remove('active');
+            navMenu?.classList.remove('active');
         });
     });
 
-    /* -----------------------------------------------------
-       6. Active nav link on scroll
-    ----------------------------------------------------- */
+    /* ---------- Active nav link ---------- */
     const navLinks = document.querySelectorAll('.nav-links a');
     const sections = Array.from(navLinks)
-        .map((link) => document.querySelector(link.getAttribute('href')))
+        .map((l) => document.querySelector(l.getAttribute('href')))
         .filter(Boolean);
 
-    function updateActiveLink() {
-        const offset = 150;
-        const current = window.scrollY + offset;
-        let found = false;
-
-        for (let i = sections.length - 1; i >= 0; i -= 1) {
-            const section = sections[i];
-            if (!section) continue;
-            if (current >= section.offsetTop) {
-                const id = `#${section.id}`;
-                navLinks.forEach((link) => {
-                    link.classList.toggle('active', link.getAttribute('href') === id);
-                });
-                found = true;
-                break;
+    const updateActiveLink = () => {
+        const cur = window.scrollY + 150;
+        for (let i = sections.length - 1; i >= 0; i--) {
+            if (cur >= sections[i].offsetTop) {
+                const id = '#' + sections[i].id;
+                navLinks.forEach((l) => l.classList.toggle('active', l.getAttribute('href') === id));
+                return;
             }
         }
-
-        if (!found) {
-            navLinks.forEach((link) => link.classList.remove('active'));
-        }
-    }
+    };
 
     window.addEventListener('scroll', updateActiveLink, { passive: true });
     window.addEventListener('load', updateActiveLink);
-    window.addEventListener('hashchange', updateActiveLink);
 
-    navLinks.forEach((link) => {
-        link.addEventListener('click', () => {
-            navLinks.forEach((l) => l.classList.remove('active'));
-            link.classList.add('active');
+    /* ---------- Reduced motion / no GSAP — bail early ---------- */
+    if (!hasGSAP || reduceMotion) {
+        document.querySelectorAll('.hero-image img').forEach((el) => { el.style.clipPath = 'inset(0)'; });
+        return;
+    }
+
+    /* =========================================================
+       TEXT SPLITTER
+    ========================================================= */
+    function splitWords(el) {
+        if (!el || el.dataset.split) return [];
+        const textNodes = [];
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        let n;
+        while ((n = walker.nextNode())) {
+            if (n.textContent.trim()) textNodes.push(n);
+        }
+
+        const words = [];
+        textNodes.forEach((tn) => {
+            const parts = tn.textContent.split(/(\s+)/);
+            const frag = document.createDocumentFragment();
+            parts.forEach((part) => {
+                if (!part) return;
+                if (/^\s+$/.test(part)) {
+                    frag.appendChild(document.createTextNode(part));
+                    return;
+                }
+                const wrap = document.createElement('span');
+                wrap.style.cssText = 'display:inline-block;overflow:hidden;vertical-align:top;';
+                const inner = document.createElement('span');
+                inner.style.cssText = 'display:inline-block;will-change:transform;';
+                inner.textContent = part;
+                wrap.appendChild(inner);
+                frag.appendChild(wrap);
+                words.push(inner);
+            });
+            tn.parentNode.replaceChild(frag, tn);
+        });
+
+        el.dataset.split = '1';
+        return words;
+    }
+
+    /* =========================================================
+       CUSTOM CURSOR
+    ========================================================= */
+    if (isFine) {
+        const dot = document.querySelector('.cursor-dot');
+        const ring = document.querySelector('.cursor-ring');
+
+        if (dot && ring) {
+            const dotX = gsap.quickTo(dot, 'x', { duration: 0.15, ease: 'power3' });
+            const dotY = gsap.quickTo(dot, 'y', { duration: 0.15, ease: 'power3' });
+            const ringX = gsap.quickTo(ring, 'x', { duration: 0.55, ease: 'power3' });
+            const ringY = gsap.quickTo(ring, 'y', { duration: 0.55, ease: 'power3' });
+
+            window.addEventListener('pointermove', (e) => {
+                dotX(e.clientX); dotY(e.clientY);
+                ringX(e.clientX); ringY(e.clientY);
+            });
+
+            document.querySelectorAll(
+                'a, button, .project-card, .cert-card, .skill-tag, .hero-image'
+            ).forEach((el) => {
+                el.addEventListener('pointerenter', () => ring.classList.add('hover'));
+                el.addEventListener('pointerleave', () => ring.classList.remove('hover'));
+            });
+        }
+    }
+
+    /* =========================================================
+       HERO TIMELINE
+    ========================================================= */
+    const typedName = document.getElementById('typed-name');
+    const roleEl = document.getElementById('dynamic-role');
+    const fullName = 'Tanishq Kushwaha';
+    const roles = ['Junior Software Developer', 'Frontend Developer', 'Problem Solver'];
+
+    let roleIdx = 0;
+    let charIdx = 0;
+    let deleting = false;
+
+    function startRoleRotation() {
+        const cur = roles[roleIdx];
+        if (deleting) {
+            roleEl.textContent = cur.substring(0, charIdx - 1);
+            charIdx -= 1;
+        } else {
+            roleEl.textContent = cur.substring(0, charIdx + 1);
+            charIdx += 1;
+        }
+        let speed = deleting ? 40 : 75;
+        if (!deleting && charIdx === cur.length) {
+            speed = 2000;
+            deleting = true;
+        } else if (deleting && charIdx === 0) {
+            deleting = false;
+            roleIdx = (roleIdx + 1) % roles.length;
+            speed = 400;
+        }
+        setTimeout(startRoleRotation, speed);
+    }
+
+    function typeName(cb) {
+        let i = 0;
+        function tick() {
+            if (i < fullName.length) {
+                typedName.textContent += fullName[i++];
+                setTimeout(tick, 70);
+            } else if (cb) {
+                cb();
+            }
+        }
+        tick();
+    }
+
+    const introTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+
+    introTl
+        .from('.hero-content h1', { y: 60, opacity: 0, duration: 1 }, 0.1)
+        .fromTo('.hero-image img',
+            { clipPath: 'inset(0 0 100% 0)' },
+            { clipPath: 'inset(0 0 0 0)', duration: 1.4, ease: 'expo.inOut' },
+            0.3
+        )
+        .from('.hero-orbit', { opacity: 0, scale: 0.92, duration: 1 }, 0.85)
+        .from('.dynamic-text', { y: 20, opacity: 0, duration: 0.6 }, 0.95)
+        .from('.hero-buttons .btn', { y: 20, opacity: 0, duration: 0.6, stagger: 0.1 }, 1.05)
+        .add(() => {
+            typeName(() => setTimeout(startRoleRotation, 300));
+        }, 0.9);
+
+    /* ----- Hero image — soft continuous float -----
+Animates the inner <img>, NOT the .hero-image wrapper.
+Why: the pointer-tilt targets .hero-image (x/y/rotation),
+and the scroll parallax targets .hero-image (yPercent).
+Floating the inner img keeps all three independent.
+
+delay 1.8s = waits for the intro clip-reveal to finish
+(clip reveal ends at ~1.7s) so we don't fight the intro. */
+    gsap.to('.hero-image img', {
+        y: -14,
+        duration: 3.4,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+        delay: 1.8
+    });
+
+    /* =========================================================
+       SECTION HEADINGS — SPLIT REVEAL
+    ========================================================= */
+    document.querySelectorAll('.section-head h2').forEach((h2) => {
+        const words = splitWords(h2);
+        if (!words.length) return;
+
+        gsap.set(words, { y: 30, opacity: 0, rotate: 2 });
+
+        ScrollTrigger.create({
+            trigger: h2,
+            start: 'top 85%',
+            once: true,
+            onEnter: () => {
+                gsap.to(words, {
+                    y: 0,
+                    opacity: 1,
+                    rotate: 0,
+                    duration: 0.85,
+                    ease: 'expo.out',
+                    stagger: 0.06
+                });
+            }
         });
     });
 
-    /* -----------------------------------------------------
-       7. Fallback reveals (jab GSAP available na ho)
-    ----------------------------------------------------- */
-    function initCardFallback() {
-        const revealElements = document.querySelectorAll('.project-card, .cert-card');
-        if (!revealElements.length) return;
+    /* =========================================================
+       MARQUEE
+    ========================================================= */
+    const marqueeTrack = document.querySelector('.marquee-track');
+    if (marqueeTrack) {
+        const clone = marqueeTrack.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        marqueeTrack.parentNode.appendChild(clone);
 
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            revealElements.forEach((el) => el.classList.add('reveal-card', 'visible'));
-            return;
-        }
-
-        revealElements.forEach((el, i) => {
-            el.classList.add('reveal-card');
-            el.style.transitionDelay = `${i * 120}ms`;
+        gsap.to([marqueeTrack, clone], {
+            xPercent: -100,
+            repeat: -1,
+            duration: 30,
+            ease: 'linear'
         });
+    }
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                entry.target.classList.toggle('visible', entry.isIntersecting);
+    /* =========================================================
+       3D TILT ON CARDS
+    ========================================================= */
+    if (isFine) {
+        document.querySelectorAll('.project-card, .cert-card').forEach((card) => {
+            gsap.set(card, { transformPerspective: 900 });
+            const rotX = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power2' });
+            const rotY = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power2' });
+
+            card.addEventListener('pointermove', (e) => {
+                const r = card.getBoundingClientRect();
+                const x = (e.clientX - r.left) / r.width - 0.5;
+                const y = (e.clientY - r.top) / r.height - 0.5;
+                rotX(-y * 8);
+                rotY(x * 8);
             });
-        }, {
-            root: null,
-            rootMargin: '0px 0px -80px 0px',
-            threshold: 0.12
+            card.addEventListener('pointerleave', () => { rotX(0); rotY(0); });
         });
-
-        revealElements.forEach((el) => observer.observe(el));
     }
 
-    /* -----------------------------------------------------
-       8. GSAP Motion Layer
-    ----------------------------------------------------- */
-    function initMotion() {
-        if (!gsapReady || !scrollTriggerReady) {
-            initCardFallback();
-            return;
-        }
+    /* =========================================================
+       ELASTIC MAGNETIC BUTTONS
+    ========================================================= */
+    if (isFine) {
+        document.querySelectorAll('.btn, .btn-small').forEach((btn) => {
+            const xTo = gsap.quickTo(btn, 'x', { duration: 0.6, ease: 'elastic.out(1, 0.4)' });
+            const yTo = gsap.quickTo(btn, 'y', { duration: 0.6, ease: 'elastic.out(1, 0.4)' });
 
-        // CSS scroll-timeline hata do — GSAP control lega
-        document.querySelectorAll('.autoshow').forEach((el) => el.classList.remove('autoshow'));
-
-        if (prefersReducedMotion) return;
-
-        const mm = gsap.matchMedia();
-
-        mm.add(
-            {
-                motionOk: '(prefers-reduced-motion: no-preference)',
-                isDesktop: '(min-width: 769px)',
-                isFinePointer: '(hover: hover) and (pointer: fine)'
-            },
-            (context) => {
-                const { motionOk, isDesktop, isFinePointer } = context.conditions;
-                if (!motionOk) return;
-
-                const cleanups = [];
-                const distance = isDesktop ? 36 : 22;
-
-                /* Helper: reveal with hover-safe transform clearing */
-                const fromReveal = (targets, fromVars, scrollTriggerVars) => {
-                    const elements = gsap.utils.toArray(targets);
-                    if (!elements.length) return;
-
-                    elements.forEach((el) => el.classList.add('animating-gsap'));
-
-                    const vars = Object.assign({}, fromVars, {
-                        clearProps: 'transform',
-                        onComplete: () => {
-                            elements.forEach((el) => el.classList.remove('animating-gsap'));
-                        }
-                    });
-
-                    if (scrollTriggerVars) {
-                        vars.scrollTrigger = scrollTriggerVars;
-                    }
-
-                    gsap.from(elements, vars);
-                };
-
-                /* ----- Navigation entrance ----- */
-                gsap.from('.left', {
-                    y: -16,
-                    opacity: 0,
-                    duration: 0.55,
-                    ease: 'power3.out',
-                    clearProps: 'transform'
-                });
-
-                gsap.from('.nav-links li', {
-                    y: -14,
-                    opacity: 0,
-                    duration: 0.5,
-                    stagger: 0.06,
-                    delay: 0.12,
-                    ease: 'power3.out',
-                    clearProps: 'transform'
-                });
-
-                /* ----- Hero timeline ----- */
-                const heroButtons = gsap.utils.toArray('.hero-buttons .btn');
-                heroButtons.forEach((btn) => btn.classList.add('animating-gsap'));
-
-                const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-                heroTl
-                    .from('.hero-content h1', {
-                        y: 40,
-                        opacity: 0,
-                        duration: 0.85,
-                        ease: 'power4.out'
-                    }, 0.08)
-                    .from('.dynamic-text', {
-                        y: 20,
-                        opacity: 0,
-                        duration: 0.65
-                    }, 0.55)
-                    .from('.hero-image', {
-                        opacity: 0,
-                        scale: 0.88,
-                        y: 28,
-                        duration: 1.05
-                    }, 0.28)
-                    .from('.hero-orbit', {
-                        opacity: 0,
-                        duration: 0.8
-                    }, 0.6)
-                    .from(heroButtons, {
-                        y: 22,
-                        opacity: 0,
-                        duration: 0.6,
-                        stagger: 0.1,
-                        clearProps: 'transform',
-                        onComplete: () => {
-                            heroButtons.forEach((btn) => btn.classList.remove('animating-gsap'));
-                        }
-                    }, 0.7)
-                    .call(startTypingOnce, null, 0.85);
-
-                /* ----- Desktop-only: parallax + pointer tilt ----- */
-                if (isDesktop) {
-                    gsap.to('.hero-image', {
-                        yPercent: 10,
-                        ease: 'none',
-                        scrollTrigger: {
-                            trigger: '#home',
-                            start: 'top top',
-                            end: 'bottom top',
-                            scrub: 0.7
-                        }
-                    });
-
-                    const heroImage = document.querySelector('.hero-image');
-                    const heroSection = document.querySelector('#home');
-
-                    if (heroImage && heroSection && isFinePointer) {
-                        const xTo = gsap.quickTo(heroImage, 'x', { duration: 0.55, ease: 'power3' });
-                        const yTo = gsap.quickTo(heroImage, 'y', { duration: 0.55, ease: 'power3' });
-                        const rotateXTo = gsap.quickTo(heroImage, 'rotationX', { duration: 0.55, ease: 'power3' });
-                        const rotateYTo = gsap.quickTo(heroImage, 'rotationY', { duration: 0.55, ease: 'power3' });
-
-                        const handlePointerMove = (event) => {
-                            const rect = heroImage.getBoundingClientRect();
-                            const relX = (event.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
-                            const relY = (event.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-                            xTo(relX * 10);
-                            yTo(relY * 10);
-                            rotateXTo(-relY * 6);
-                            rotateYTo(relX * 6);
-                        };
-
-                        const resetTilt = () => {
-                            xTo(0); yTo(0); rotateXTo(0); rotateYTo(0);
-                        };
-
-                        heroSection.addEventListener('pointermove', handlePointerMove);
-                        heroSection.addEventListener('pointerleave', resetTilt);
-
-                        cleanups.push(() => {
-                            heroSection.removeEventListener('pointermove', handlePointerMove);
-                            heroSection.removeEventListener('pointerleave', resetTilt);
-                        });
-                    }
-                }
-
-                /* ----- Magnetic buttons (desktop + fine pointer) ----- */
-                if (isDesktop && isFinePointer) {
-                    const magneticTargets = gsap.utils.toArray('.hero-buttons .btn, .contact-links .btn');
-                    magneticTargets.forEach((btn) => {
-                        const xTo = gsap.quickTo(btn, 'x', { duration: 0.4, ease: 'power3' });
-                        const yTo = gsap.quickTo(btn, 'y', { duration: 0.4, ease: 'power3' });
-
-                        const onMove = (e) => {
-                            const rect = btn.getBoundingClientRect();
-                            const relX = e.clientX - (rect.left + rect.width / 2);
-                            const relY = e.clientY - (rect.top + rect.height / 2);
-                            // 0.2 = 20% pull; badhana ho to 0.3+ kar do
-                            xTo(relX * 0.2);
-                            yTo(relY * 0.2);
-                        };
-
-                        const onLeave = () => {
-                            xTo(0);
-                            yTo(0);
-                        };
-
-                        btn.addEventListener('pointermove', onMove);
-                        btn.addEventListener('pointerleave', onLeave);
-
-                        cleanups.push(() => {
-                            btn.removeEventListener('pointermove', onMove);
-                            btn.removeEventListener('pointerleave', onLeave);
-                            gsap.set(btn, { x: 0, y: 0 });
-                        });
-                    });
-                }
-
-                /* ----- About ----- */
-                fromReveal('#about h2', { y: distance, opacity: 0, duration: 0.75 }, {
-                    trigger: '#about', start: 'top 80%'
-                });
-                fromReveal('.about-text', { y: distance, opacity: 0, duration: 0.85 }, {
-                    trigger: '.about-text', start: 'top 86%'
-                });
-                fromReveal('.skill-tag', {
-                    y: 20, opacity: 0, scale: 0.94, duration: 0.5, stagger: 0.055, ease: 'power2.out'
-                }, {
-                    trigger: '.skills-container', start: 'top 90%'
-                });
-
-                /* ----- Projects ----- */
-                fromReveal('#projects h2', { y: distance, opacity: 0, duration: 0.75 }, {
-                    trigger: '#projects', start: 'top 80%'
-                });
-                fromReveal('.project-card', {
-                    y: distance + 8, opacity: 0, scale: 0.96, duration: 0.75, stagger: 0.12
-                }, {
-                    trigger: '.projects-grid', start: 'top 86%'
-                });
-
-                /* ----- Certifications ----- */
-                fromReveal('#certificates h2', { y: distance, opacity: 0, duration: 0.75 }, {
-                    trigger: '#certificates', start: 'top 80%'
-                });
-                fromReveal('.cert-card', {
-                    y: distance + 6, opacity: 0, scale: 0.96, duration: 0.7, stagger: 0.11
-                }, {
-                    trigger: '.certificates-grid', start: 'top 86%'
-                });
-
-                /* ----- Contact ----- */
-                fromReveal('#contact h2', { y: distance, opacity: 0, duration: 0.75 }, {
-                    trigger: '#contact', start: 'top 80%'
-                });
-                fromReveal('#contact-text', { y: distance, opacity: 0, duration: 0.85 }, {
-                    trigger: '#contact-text', start: 'top 88%'
-                });
-                fromReveal('.contact-links .btn', {
-                    y: 20, opacity: 0, duration: 0.55, stagger: 0.09, ease: 'power2.out'
-                }, {
-                    trigger: '.contact-links', start: 'top 90%'
-                });
-
-                /* ----- Footer ----- */
-                fromReveal('.footer-brand, .footer-copyright, .footer-status', {
-                    y: 24, opacity: 0, duration: 0.65, stagger: 0.1, ease: 'power2.out'
-                }, {
-                    trigger: '.premium-footer', start: 'top 94%'
-                });
-
-                /* ----- Scroll progress ----- */
-                if (document.querySelector('.scroll-progress')) {
-                    gsap.to('.scroll-progress', {
-                        scaleX: 1,
-                        ease: 'none',
-                        scrollTrigger: { start: 0, end: 'max', scrub: 0.25 }
-                    });
-                }
-
-                return () => {
-                    cleanups.forEach((fn) => fn());
-                    document.querySelectorAll('.animating-gsap').forEach((el) => {
-                        el.classList.remove('animating-gsap');
-                    });
-                };
-            }
-        );
-    }
-
-    /* -----------------------------------------------------
-   8b. Pointer Effects (Cursor glow + Background parallax)
-   
-   Sirf desktop + mouse wale devices par chalta hai.
-   Touch phones / tablets / reduced-motion — sab skip.
-   
-   Do effects ek saath:
-     1. .cursor-glow div cursor ko smoothly follow karta hai
-     2. .bg-layer cursor ke OPPOSITE direction mein halke se shift hota hai
------------------------------------------------------ */
-    function initPointerEffects() {
-        // Sirf desktop + mouse check
-        const isDesktopWithMouse = window.matchMedia(
-            '(hover: hover) and (pointer: fine)'
-        ).matches;
-
-        // Accessibility — reduced motion check
-        const prefersReduced = window.matchMedia(
-            '(prefers-reduced-motion: reduce)'
-        ).matches;
-
-        // Koi bhi condition fail ho to kuch mat karo
-        if (!isDesktopWithMouse || prefersReduced || !gsapReady) {
-            return function noop() { /* nothing */ };
-        }
-
-        const glowEl = document.querySelector('.cursor-glow');
-        const bgEl = document.querySelector('.bg-layer');
-
-        /* ---- Part A: Cursor glow follower ---- */
-        let onGlowMove = null;
-        let onGlowLeave = null;
-
-        if (glowEl) {
-            // quickTo = ek hi tween ko retarget karta hai (1000x faster than gsap.to per move)
-            const glowXTo = gsap.quickTo(glowEl, 'x', { duration: 0.35, ease: 'power2.out' });
-            const glowYTo = gsap.quickTo(glowEl, 'y', { duration: 0.35, ease: 'power2.out' });
-
-            onGlowMove = function (event) {
-                document.body.classList.add('cursor-active');
-                glowXTo(event.clientX);
-                glowYTo(event.clientY);
-            };
-
-            onGlowLeave = function () {
-                document.body.classList.remove('cursor-active');
-            };
-
-            window.addEventListener('pointermove', onGlowMove, { passive: true });
-            document.documentElement.addEventListener('pointerleave', onGlowLeave);
-        }
-
-        /* ---- Part B: Background parallax ---- */
-        let onBgMove = null;
-
-        if (bgEl) {
-            const MAX_OFFSET = 14;   // 8-25 ke beech rakhna — zyada = zyada movement
-
-            const bgXTo = gsap.quickTo(bgEl, 'x', { duration: 1.4, ease: 'power2.out' });
-            const bgYTo = gsap.quickTo(bgEl, 'y', { duration: 1.4, ease: 'power2.out' });
-
-            onBgMove = function (event) {
-                // Cursor ki screen-center se doori, -1 se +1 range
-                const relX = (event.clientX / window.innerWidth - 0.5) * 2;
-                const relY = (event.clientY / window.innerHeight - 0.5) * 2;
-
-                // MINUS = opposite direction (cursor right → bg left)
-                bgXTo(-relX * MAX_OFFSET);
-                bgYTo(-relY * MAX_OFFSET);
-            };
-
-            window.addEventListener('pointermove', onBgMove, { passive: true });
-        }
-
-        /* ---- Cleanup function ---- */
-        return function cleanup() {
-            if (onGlowMove) window.removeEventListener('pointermove', onGlowMove);
-            if (onGlowLeave) document.documentElement.removeEventListener('pointerleave', onGlowLeave);
-            if (onBgMove) window.removeEventListener('pointermove', onBgMove);
-            document.body.classList.remove('cursor-active');
-            if (bgEl) gsap.set(bgEl, { x: 0, y: 0 });
-        };
-    }
-
-    /* -----------------------------------------------------
-       9. Boot
-    ----------------------------------------------------- */
-    initMotion();
-
-
-    // Media query change par automatically on/off ho jayen
-    // (desktop ↔ mobile resize, reduced-motion toggle, etc.)
-    (function managePointerEffectsLifecycle() {
-        let activeCleanup = null;
-
-        const mediaQuery = window.matchMedia(
-            '(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)'
-        );
-
-        const activate = () => {
-            if (activeCleanup) return;
-            activeCleanup = initPointerEffects();
-        };
-
-        const deactivate = () => {
-            if (activeCleanup) {
-                activeCleanup();
-                activeCleanup = null;
-            }
-        };
-
-        if (mediaQuery.matches) activate();
-
-        if (mediaQuery.addEventListener) {
-            mediaQuery.addEventListener('change', (e) => {
-                if (e.matches) activate();
-                else deactivate();
+            btn.addEventListener('pointermove', (e) => {
+                const r = btn.getBoundingClientRect();
+                xTo((e.clientX - (r.left + r.width / 2)) * 0.35);
+                yTo((e.clientY - (r.top + r.height / 2)) * 0.35);
             });
-        } else if (mediaQuery.addListener) {
-            // Purani Safari fallback
-            mediaQuery.addListener((e) => {
-                if (e.matches) activate();
-                else deactivate();
-            });
-        }
-    })();
+            btn.addEventListener('pointerleave', () => { xTo(0); yTo(0); });
+        });
+    }
 
-    window.addEventListener('load', () => {
-        if (scrollTriggerReady && !prefersReducedMotion) {
-            ScrollTrigger.refresh();
+    /* =========================================================
+       SCROLL VELOCITY SKEW
+    ========================================================= */
+    const skewSetter = gsap.quickSetter('main > section', 'skewY', 'deg');
+    const proxy = { skew: 0 };
+
+    ScrollTrigger.create({
+        onUpdate: (self) => {
+            const v = self.getVelocity();
+            const skew = gsap.utils.clamp(-6, 6, v / -180);
+            if (Math.abs(skew) > Math.abs(proxy.skew)) {
+                proxy.skew = skew;
+                gsap.to(proxy, {
+                    skew: 0,
+                    duration: 0.9,
+                    ease: 'power3',
+                    overwrite: true,
+                    onUpdate: () => skewSetter(proxy.skew)
+                });
+            }
         }
     });
 
-    if (scrollTriggerReady && document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(() => {
-            if (!prefersReducedMotion) ScrollTrigger.refresh();
+    /* =========================================================
+       NUMBER COUNTERS
+    ========================================================= */
+    document.querySelectorAll('.stat-num').forEach((el) => {
+        const target = parseFloat(el.dataset.count || el.textContent);
+        if (isNaN(target)) return;
+        const suffix = el.dataset.suffix || '';
+        const obj = { v: 0 };
+
+        ScrollTrigger.create({
+            trigger: el,
+            start: 'top 85%',
+            once: true,
+            onEnter: () => {
+                gsap.to(obj, {
+                    v: target,
+                    duration: 1.6,
+                    ease: 'power2.out',
+                    onUpdate: () => {
+                        el.textContent = Math.round(obj.v) + suffix;
+                    }
+                });
+            }
+        });
+    });
+
+    /* =========================================================
+       GENERIC REVEALS
+    ========================================================= */
+    const reveal = (selector, opts = {}) => {
+        gsap.utils.toArray(selector).forEach((el) => {
+            gsap.from(el, {
+                y: opts.y ?? 40,
+                opacity: 0,
+                duration: opts.duration ?? 0.9,
+                ease: 'power3.out',
+                scrollTrigger: {
+                    trigger: el,
+                    start: opts.start ?? 'top 88%',
+                    once: true
+                }
+            });
+        });
+    };
+
+    reveal('.about-text');
+    reveal('.skill-tag', { y: 20, duration: 0.6 });
+    reveal('.project-card', { y: 50, duration: 1 });
+    reveal('.cert-card', { y: 40, duration: 0.8 });
+    reveal('#contact-text');
+    reveal('.contact-links .btn', { y: 20, duration: 0.6 });
+    reveal('.footer-container > *', { y: 30, duration: 0.7 });
+
+    /* Scroll progress bar */
+    const progressBar = document.querySelector('.scroll-progress');
+    if (progressBar) {
+        gsap.to(progressBar, {
+            scaleX: 1,
+            ease: 'none',
+            scrollTrigger: { start: 0, end: 'max', scrub: 0.3 }
         });
     }
+
+    /* Refresh after fonts load */
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => ScrollTrigger.refresh());
+    }
+    window.addEventListener('load', () => ScrollTrigger.refresh());
 })();

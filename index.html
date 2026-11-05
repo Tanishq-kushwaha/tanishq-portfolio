@@ -89,6 +89,10 @@
     <!-- Cursor glow — mouse wale desktop par cursor ke saath chalne wali soft light -->
     <div class="cursor-glow" aria-hidden="true"></div>
 
+    <!-- Advanced custom cursor -->
+    <div class="cursor-dot" aria-hidden="true"></div>
+    <div class="cursor-ring" aria-hidden="true"></div>
+
     <!-- ============================================================
          Background Layer — Theme ke hisaab se cosmic (dark) ya aurora (light)
          Ye click/scroll/selection ko block nahi karta (pointer-events: none).
@@ -142,10 +146,24 @@
             </div>
         </section>
 
+        <!-- Infinite marquee strip -->
+        <div class="marquee" aria-hidden="true">
+            <div class="marquee-track">
+                <span class="marquee-item">Frontend Developer</span>
+                <span class="marquee-item">Junior Software Developer</span>
+                <span class="marquee-item">Problem Solver</span>
+                <span class="marquee-item">Cybersecurity Learner</span>
+                <span class="marquee-item">Logic First</span>
+            </div>
+        </div>
+
         <!-- About -->
         <section id="about" class="about-section">
+            <div class="section-head">
+                <span class="num">01 —</span>
+                <h2>About <span class="highlight">Me</span></h2>
+            </div>
             <div class="about-content">
-                <h2 class="autoshow">About <span class="highlight">Me</span></h2>
                 <p class="about-text"></p>
 
                 <div class="skills-container">
@@ -160,11 +178,30 @@
                     <span class="skill-tag">SQL</span>
                 </div>
             </div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-num" data-count="4">4</span>
+                    <span class="stat-label">Projects Shipped</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" data-count="3">3</span>
+                    <span class="stat-label">Certifications</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" data-count="9" data-suffix="+">9+</span>
+                    <span class="stat-label">Technologies</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" data-count="100" data-suffix="%">100%</span>
+                    <span class="stat-label">Client-first</span>
+                </div>
+            </div>
         </section>
 
         <!-- Projects -->
         <section id="projects" class="projects-section">
-            <div class="autoshow">
+            <div class="section-head">
+                <span class="num">02 —</span>
                 <h2>My <span class="highlight">Projects</span></h2>
             </div>
             <div class="projects-grid">
@@ -220,7 +257,10 @@
 
         <!-- Certifications -->
         <section id="certificates" class="certificates-section">
-            <h2 class="autoshow">My <span class="highlight">Certifications</span></h2>
+            <div class="section-head">
+                <span class="num">03 —</span>
+                <h2>My <span class="highlight">Certifications</span></h2>
+            </div>
             <div class="certificates-grid">
                 <div class="cert-card">
                     <h3>Foundations of Cybersecurity</h3>
@@ -245,7 +285,10 @@
 
         <!-- Contact -->
         <section id="contact" class="contact-section">
-            <h2 class="autoshow">Get In <span class="highlight">Touch</span></h2>
+            <div class="section-head">
+                <span class="num">04 —</span>
+                <h2>Get In <span class="highlight">Touch</span></h2>
+            </div>
             <p id="contact-text"></p>
             <div class="contact-links">
                 <a href="mailto:tanishqkushwaha09@gmail.com" class="btn">Say Hello</a>
