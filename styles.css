@@ -891,7 +891,24 @@ section {
 
 
 /* =========================================================
-   15. CUSTOM CURSOR (desktop only)
+   15. CUSTOM CURSOR — contextual label mode (desktop only)
+
+   KEY FIX: The rotating dashed border lives on .cursor-ring::before
+   (a pseudo-element), NOT on .cursor-ring itself.
+
+   Why: CSS applies `translate` → `rotate` → `transform` in that
+   order. If we rotate the ring directly, the rotation is applied
+   AFTER the translation, which rotates the ring's position around
+   the screen origin — moving it far off to the left.
+
+   By putting rotation on ::before (which is `position: absolute;
+   inset: 0`), it rotates around its own center (same as ring's
+   center = cursor position). The ring itself never rotates, so
+   translate + transform compose correctly.
+
+   Default: solid dot + rotating dashed ring
+   Label:   ring fills violet, dashed border fades out,
+            rotation pauses, label text appears
 ========================================================= */
 @media (hover: hover) and (pointer: fine) {
 
@@ -906,6 +923,10 @@ section {
         cursor: text !important;
     }
 
+    /* Shared base — GSAP writes x/y via `transform`,
+       while `translate: -50% -50%` handles centering.
+       They don't conflict because `translate` is a
+       separate CSS property from `transform`. */
     .cursor-dot,
     .cursor-ring {
         position: fixed;
@@ -914,33 +935,85 @@ section {
         pointer-events: none;
         z-index: 9999;
         border-radius: 50%;
-        transform: translate(-50%, -50%);
+        translate: -50% -50%;
         will-change: transform;
     }
 
+    /* Small solid violet dot */
     .cursor-dot {
-        width: 6px;
-        height: 6px;
+        width: 5px;
+        height: 5px;
         background: var(--accent);
-        mix-blend-mode: difference;
+        transition: opacity 0.25s ease, scale 0.25s ease;
     }
 
+    /* Ring: positioning + size only. No border, no rotation here. */
     .cursor-ring {
-        width: 42px;
-        height: 42px;
-        border: 1.5px solid var(--accent);
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         transition:
-            width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-            height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-            background 0.35s ease,
-            border-color 0.35s ease;
-        mix-blend-mode: difference;
+            width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            background 0.3s ease;
     }
 
-    .cursor-ring.hover {
-        width: 74px;
-        height: 74px;
-        background: rgba(124, 92, 255, 0.18);
+    /* Rotating dashed border — separate pseudo-element.
+       `inset: 0` fills the parent, so its center = ring's center.
+       Rotation happens around its own center → no position shift. */
+    .cursor-ring::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: 1.5px dashed var(--accent);
+        border-radius: 50%;
+        animation: cursor-rotate 9s linear infinite;
+        transition: opacity 0.3s ease;
+    }
+
+    @keyframes cursor-rotate {
+        to {
+            rotate: 360deg;
+        }
+    }
+
+    /* Label — hidden by default (font-size 0) */
+    .cursor-label {
+        position: relative; /* above ::before */
+        z-index: 1;
+        font-size: 0;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: #ffffff;
+        text-transform: uppercase;
+        line-height: 1;
+        pointer-events: none;
+        white-space: nowrap;
+        transition: font-size 0.25s ease;
+    }
+
+    /* Label mode: ring fills + grows, dashed border fades out */
+    .cursor-ring.label-mode {
+        width: 88px;
+        height: 88px;
+        background: var(--accent);
+    }
+
+    .cursor-ring.label-mode::before {
+        opacity: 0;
+        animation-play-state: paused;
+    }
+
+    .cursor-ring.label-mode .cursor-label {
+        font-size: 10px;
+    }
+
+    /* Dot hides while label is showing */
+    .cursor-dot.hidden {
+        opacity: 0;
+        scale: 0.3;
     }
 }
 
@@ -952,7 +1025,6 @@ section {
         display: none;
     }
 }
-
 
 /* =========================================================
    16. REDUCED MOTION

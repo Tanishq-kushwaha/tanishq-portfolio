@@ -134,15 +134,22 @@
     }
 
     /* =========================================================
-       CUSTOM CURSOR
-    ========================================================= */
+   CUSTOM CURSOR — contextual label mode
+========================================================= */
     if (isFine) {
         const dot = document.querySelector('.cursor-dot');
         const ring = document.querySelector('.cursor-ring');
+        const label = document.querySelector('.cursor-label');
 
         if (dot && ring) {
-            const dotX = gsap.quickTo(dot, 'x', { duration: 0.15, ease: 'power3' });
-            const dotY = gsap.quickTo(dot, 'y', { duration: 0.15, ease: 'power3' });
+            // CSS handles centering via `translate: -50% -50%`.
+            // GSAP only writes x/y movement — no percentage offset here,
+            // otherwise we get a double-centering bug (off-screen ring).
+            gsap.set(dot, { x: 0, y: 0 });
+            gsap.set(ring, { x: 0, y: 0 });
+
+            const dotX = gsap.quickTo(dot, 'x', { duration: 0.12, ease: 'power3' });
+            const dotY = gsap.quickTo(dot, 'y', { duration: 0.12, ease: 'power3' });
             const ringX = gsap.quickTo(ring, 'x', { duration: 0.55, ease: 'power3' });
             const ringY = gsap.quickTo(ring, 'y', { duration: 0.55, ease: 'power3' });
 
@@ -151,11 +158,17 @@
                 ringX(e.clientX); ringY(e.clientY);
             });
 
-            document.querySelectorAll(
-                'a, button, .project-card, .cert-card, .skill-tag, .hero-image'
-            ).forEach((el) => {
-                el.addEventListener('pointerenter', () => ring.classList.add('hover'));
-                el.addEventListener('pointerleave', () => ring.classList.remove('hover'));
+            // Elements with [data-cursor] show their label inside the ring
+            document.querySelectorAll('[data-cursor]').forEach((el) => {
+                el.addEventListener('pointerenter', () => {
+                    if (label) label.textContent = el.dataset.cursor.toUpperCase();
+                    ring.classList.add('label-mode');
+                    dot.classList.add('hidden');
+                });
+                el.addEventListener('pointerleave', () => {
+                    ring.classList.remove('label-mode');
+                    dot.classList.remove('hidden');
+                });
             });
         }
     }
@@ -257,9 +270,9 @@ delay 1.8s = waits for the intro clip-reveal to finish
                     y: 0,
                     opacity: 1,
                     rotate: 0,
-                    duration: 0.85,
-                    ease: 'expo.out',
-                    stagger: 0.06
+                    duration: 1.05,       // was 0.85 — slower = more elegant
+                    ease: 'power3.out',   // smoother than expo for word-by-word
+                    stagger: 0.09         // was 0.06 — wider gap between words
                 });
             }
         });
@@ -295,8 +308,8 @@ delay 1.8s = waits for the intro clip-reveal to finish
                 const r = card.getBoundingClientRect();
                 const x = (e.clientX - r.left) / r.width - 0.5;
                 const y = (e.clientY - r.top) / r.height - 0.5;
-                rotX(-y * 8);
-                rotY(x * 8);
+                rotX(-y * 11);   // was 8 — more visible tilt
+                rotY(x * 11);
             });
             card.addEventListener('pointerleave', () => { rotX(0); rotY(0); });
         });
@@ -307,13 +320,17 @@ delay 1.8s = waits for the intro clip-reveal to finish
     ========================================================= */
     if (isFine) {
         document.querySelectorAll('.btn, .btn-small').forEach((btn) => {
-            const xTo = gsap.quickTo(btn, 'x', { duration: 0.6, ease: 'elastic.out(1, 0.4)' });
-            const yTo = gsap.quickTo(btn, 'y', { duration: 0.6, ease: 'elastic.out(1, 0.4)' });
+            // elastic.out(amplitude, period):
+            //   period 0.3 (was 0.4)  -> faster oscillation -> bouncier return
+            //   duration 0.7 (was 0.6) -> give the spring time to settle
+            const xTo = gsap.quickTo(btn, 'x', { duration: 0.7, ease: 'elastic.out(1, 0.3)' });
+            const yTo = gsap.quickTo(btn, 'y', { duration: 0.7, ease: 'elastic.out(1, 0.3)' });
 
             btn.addEventListener('pointermove', (e) => {
                 const r = btn.getBoundingClientRect();
-                xTo((e.clientX - (r.left + r.width / 2)) * 0.35);
-                yTo((e.clientY - (r.top + r.height / 2)) * 0.35);
+                // Pull 0.42 (was 0.35) -> more travel toward the cursor
+                xTo((e.clientX - (r.left + r.width / 2)) * 0.42);
+                yTo((e.clientY - (r.top + r.height / 2)) * 0.42);
             });
             btn.addEventListener('pointerleave', () => { xTo(0); yTo(0); });
         });
