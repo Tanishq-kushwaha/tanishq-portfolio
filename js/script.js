@@ -91,7 +91,23 @@
 
     /* ---------- Reduced motion / no GSAP — bail early ---------- */
     if (!hasGSAP || reduceMotion) {
-        document.querySelectorAll('.hero-image img').forEach((el) => { el.style.clipPath = 'inset(0)'; });
+        document.querySelectorAll('.hero-image img').forEach((el) => {
+            el.style.clipPath = 'inset(0)';
+        });
+
+        // Progress bar fallback — GSAP won't run, so update directly
+        // on scroll. No easing/scrub, but functional and honest.
+        const progressBar = document.querySelector('.scroll-progress');
+        if (progressBar) {
+            const updateProgress = () => {
+                const max = document.documentElement.scrollHeight - window.innerHeight;
+                const ratio = max > 0 ? window.scrollY / max : 0;
+                progressBar.style.transform = `scaleX(${ratio})`;
+            };
+            window.addEventListener('scroll', updateProgress, { passive: true });
+            updateProgress();
+        }
+
         return;
     }
 
@@ -436,7 +452,38 @@ delay 1.8s = waits for the intro clip-reveal to finish
     reveal('.cert-card', { y: 40, duration: 0.8 });
     reveal('#contact-text');
     reveal('.contact-links .btn', { y: 20, duration: 0.6 });
-    reveal('.footer-container > *', { y: 30, duration: 0.7 });
+
+    /* Footer — ONE trigger on the footer wrapper, not per-child.
+       Why single trigger?
+       - Per-child triggers require each child to individually reach
+         `top 88%`. The last child (status) sits near page bottom —
+         on mobile with a hidden address bar and `ignoreMobileResize`,
+         the threshold gets "stuck" at the smaller pre-scroll viewport
+         height, so the trigger fires later than expected.
+
+       Why `top 95%`?
+       - Fires as soon as the footer barely enters the viewport,
+         bypassing any viewport-height mismatch.
+
+       Why stagger?
+       - Keeps the original nice reveal rhythm — brand → copyright →
+         status, one after another, not all at once.
+    */
+    const footerEl = document.querySelector('.premium-footer');
+    if (footerEl) {
+        gsap.from('.footer-container > *', {
+            y: 30,
+            opacity: 0,
+            duration: 0.7,
+            ease: 'power3.out',
+            stagger: 0.1,
+            scrollTrigger: {
+                trigger: footerEl,
+                start: 'top 95%',
+                once: true
+            }
+        });
+    }
 
     /* Scroll progress bar */
     const progressBar = document.querySelector('.scroll-progress');

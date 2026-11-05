@@ -135,10 +135,9 @@ button {
     background: var(--bg);
 }
 
-/* Hide unused decorations. NOTE: .bg-layer::before is NOT here
-   because we use it for the mesh gradient below. */
+/* Hide unused decorations. NOTE: .bg-layer::before (mesh gradient)
+   and .bg-layer::after (noise texture) are both USED — don't hide. */
 .bg-gradient,
-.bg-layer::after,
 .cursor-glow {
     display: none !important;
 }
@@ -163,6 +162,24 @@ button {
         radial-gradient(ellipse 1000px 700px at 50% 100%, rgba(100, 140, 255, 0.10), transparent 60%);
 }
 
+/* Noise texture overlay — subtle film grain for editorial premium feel.
+   Inline SVG (feTurbulence) = zero HTTP requests, scales infinitely,
+   works on both themes. `mix-blend-mode: overlay` adapts to any bg. */
+.bg-layer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-repeat: repeat;
+    opacity: 0.045;
+    mix-blend-mode: overlay;
+}
+
+[data-theme="dark"] .bg-layer::after {
+    opacity: 0.07;
+}
+
 /* Canvas sits on top of the mesh (particles only, transparent bg) */
 #bg-canvas {
     position: absolute;
@@ -176,6 +193,8 @@ button {
 /* =========================================================
    04. SCROLL PROGRESS
 ========================================================= */
+/* Bar + soft outer glow — reads as a living indicator, not a ruler.
+   `var(--accent)` auto-switches between light-violet and lavender. */
 .scroll-progress {
     position: fixed;
     inset: 0 auto auto 0;
@@ -183,6 +202,7 @@ button {
     width: 100%;
     height: 2px;
     background: var(--accent);
+    box-shadow: 0 0 8px var(--accent), 0 0 2px var(--accent);
     transform: scaleX(0);
     transform-origin: left center;
     pointer-events: none;
@@ -486,15 +506,29 @@ section {
 }
 
 /* Scroll cue */
+/* Scroll cue — gentle pulse + drift to hint at scroll affordance.
+   Reduced-motion block below will pause this animation. */
 .hero::after {
     content: "SCROLL ↓";
     position: absolute;
-    bottom: 42px;
+    bottom: 48px;
     left: 0;
     color: var(--muted);
-    font-size: 0.62rem;
-    font-weight: 500;
-    letter-spacing: 0.24em;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    animation: scroll-cue 2.4s ease-in-out infinite;
+}
+
+@keyframes scroll-cue {
+    0%, 100% {
+        opacity: 0.55;
+        transform: translateY(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(4px);
+    }
 }
 
 
@@ -1120,17 +1154,52 @@ section {
 }
 
 /* =========================================================
-   16. REDUCED MOTION
+   16. REDUCED MOTION — respect user preference
+
+   Users with "Reduce Motion" ON (very common on Windows 11 /
+   macOS accessibility) get:
+   - No CSS animations (all durations effectively 0)
+   - Instant scroll (no smooth)
+   - Static hover states (no scale/lift)
+   - System cursor (custom cursor hidden — see Section 15)
+
+   JS side handles: marquee, 3D tilt, magnetic, hero float,
+   split headings, counters, reveals — all skipped on load.
 ========================================================= */
 @media (prefers-reduced-motion: reduce) {
 
+    /* Kill all animations + make transitions instant */
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
     .status-indicator,
-    .status-indicator::after {
-        animation: none;
+    .status-indicator::after,
+    .hero::after {
+        animation: none !important;
     }
 
     html {
         scroll-behavior: auto;
+    }
+
+    /* Static hover — no scale, no lift */
+    .skill-tag:hover {
+        scale: 1;
+    }
+
+    .project-card:hover,
+    .cert-card:hover {
+        translate: 0 0;
+    }
+
+    .btn:hover,
+    .btn-small:hover {
+        translate: 0 0;
     }
 }
 
@@ -1400,4 +1469,38 @@ section {
         font-size: 1.2rem;
         gap: 28px;
     }
+}
+
+/* =========================================================
+   18. FOCUS STATES — keyboard accessibility
+
+   :focus-visible = only keyboard focus, not mouse click.
+   Modern browsers understand it; older ones ignore the rule
+   entirely (safe — they keep default browser outline).
+========================================================= */
+a:focus-visible,
+button:focus-visible,
+.skill-tag:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+}
+
+.nav-links a:focus-visible {
+    color: var(--ink);
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+}
+
+.btn:focus-visible,
+.btn-small:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* Hide default outline when mouse-clicked (not keyboard-focused) */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible) {
+    outline: none;
 }
