@@ -496,6 +496,9 @@ section {
 
 /* =========================================================
    08. MARQUEE
+   Alternating serif-italic + sans-bold items create a magazine
+   rhythm. Soft surface background gives visual weight without
+   breaking the flat aesthetic.
 ========================================================= */
 .marquee {
     width: 100vw;
@@ -504,10 +507,11 @@ section {
     overflow: hidden;
     border-top: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
-    padding: 26px 0;
-    margin-top: 40px;
+    padding: 32px 0;
+    margin-top: 48px;
     display: flex;
     white-space: nowrap;
+    background: var(--surface);
 }
 
 .marquee-track {
@@ -521,7 +525,7 @@ section {
 .marquee-item {
     font-family: Georgia, "Times New Roman", serif;
     font-style: italic;
-    font-size: clamp(1.5rem, 3.2vw, 2.6rem);
+    font-size: clamp(1.6rem, 3.4vw, 2.8rem);
     color: var(--ink);
     display: inline-flex;
     align-items: center;
@@ -530,11 +534,21 @@ section {
     line-height: 1;
 }
 
+/* Even-indexed items switch to sans-bold + accent color */
+.marquee-item:nth-child(even) {
+    color: var(--accent);
+    font-family: "Poppins", "Segoe UI", sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
 .marquee-item::after {
     content: "✳";
     color: var(--accent);
-    font-size: 0.6em;
+    font-size: 0.55em;
     font-style: normal;
+    opacity: 0.7;
 }
 
 
@@ -555,20 +569,29 @@ section {
     gap: 8px;
 }
 
+/* Skill tags — pill with soft fill + subtle scale on hover.
+   `scale` property (not `transform: scale`) so it doesn't
+   fight any future transform tweaks. */
 .skill-tag {
-    padding: 8px 14px;
+    padding: 9px 16px;
     border: 1px solid var(--line);
     border-radius: 999px;
     background: transparent;
     color: var(--ink);
     font-size: 0.78rem;
     letter-spacing: 0.01em;
-    transition: border-color 0.2s ease, background 0.2s ease;
+    transition:
+        border-color 0.25s ease,
+        background-color 0.25s ease,
+        color 0.25s ease,
+        scale 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .skill-tag:hover {
     border-color: var(--accent);
-    background: var(--accent-soft);
+    background-color: var(--accent-soft);
+    color: var(--accent-strong);
+    scale: 1.06;
 }
 
 .stats-row {
@@ -607,40 +630,63 @@ section {
 
 /* =========================================================
    10. PROJECTS — bento grid
+
+   - Cards: rounded, elevated, accent border + violet glow on hover
+   - Number badge: CSS counter (01, 02, ...) — no HTML attribute needed
+     → counter-reset lives on .projects-grid, counter-increment on card
+   - Hover uses `translate` property (not `transform`) so GSAP 3D tilt
+     keeps working without conflict
 ========================================================= */
 .projects-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
+    counter-reset: project-num;
 }
 
 .project-card {
     position: relative;
-    padding: 32px 28px;
+    padding: 36px 30px;
     background: var(--surface-raised);
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: 18px;
     box-shadow: var(--shadow);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease, translate 0.3s ease;
+    counter-increment: project-num;
+    transition:
+        border-color 0.35s ease,
+        box-shadow 0.35s ease,
+        translate 0.35s ease;
     transform-style: preserve-3d;
     will-change: transform;
 }
 
 .project-card:hover {
     border-color: var(--accent);
-    translate: 0 -4px;
+    translate: 0 -6px;
     box-shadow: var(--shadow), var(--glow);
 }
 
+/* Number badge — monospace pill in top-right */
 .project-card::before {
-    content: attr(data-num);
+    content: counter(project-num, decimal-leading-zero);
     position: absolute;
-    top: 24px;
-    right: 28px;
-    font-family: Georgia, serif;
-    color: var(--muted);
-    font-size: 0.8rem;
-    letter-spacing: 0.05em;
+    top: 18px;
+    right: 22px;
+    padding: 4px 10px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    background-color: var(--accent-soft);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    transition: border-color 0.35s ease, background-color 0.35s ease;
+}
+
+.project-card:hover::before {
+    border-color: var(--accent);
+    background-color: transparent;
 }
 
 .project-card h3 {
@@ -658,7 +704,7 @@ section {
     margin-bottom: 24px;
 }
 
-/* Featured first card — full width */
+/* First card (ZenDoc) — featured, full width */
 .projects-grid .project-card:first-child {
     grid-column: 1 / -1;
     padding: 48px 44px;
@@ -693,6 +739,7 @@ section {
 
 /* =========================================================
    11. CERTIFICATIONS
+   Same premium feel as projects — rounded, elevated, violet hover.
 ========================================================= */
 .certificates-grid {
     display: grid;
@@ -701,22 +748,25 @@ section {
 }
 
 .cert-card {
-    padding: 28px 26px;
+    padding: 32px 28px;
     background: var(--surface-raised);
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: 18px;
     box-shadow: var(--shadow);
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease, translate 0.3s ease;
+    gap: 6px;
+    transition:
+        border-color 0.35s ease,
+        box-shadow 0.35s ease,
+        translate 0.35s ease;
     transform-style: preserve-3d;
     will-change: transform;
 }
 
 .cert-card:hover {
     border-color: var(--accent);
-    translate: 0 -4px;
+    translate: 0 -6px;
     box-shadow: var(--shadow), var(--glow);
 }
 
@@ -807,33 +857,46 @@ section {
     letter-spacing: 0.02em;
 }
 
-/* Pulse dot with soft violet glow */
+/* Pulse dot with expanding ring — feels alive, not just blinking.
+   Uses `scale` property (not `transform`) — clean composition. */
 .status-indicator {
-    width: 7px;
-    height: 7px;
+    position: relative;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft), 0 0 16px var(--accent);
-    animation: pulse-status 2.4s ease-in-out infinite;
+    box-shadow: 0 0 0 3px var(--accent-soft), 0 0 12px var(--accent);
 }
 
-@keyframes pulse-status {
+.status-indicator::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1px solid var(--accent);
+    animation: status-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
 
-    0%,
-    100% {
-        opacity: 1;
+@keyframes status-ping {
+    0% {
+        scale: 0.7;
+        opacity: 0.9;
     }
 
-    50% {
-        opacity: 0.45;
+    80%,
+    100% {
+        scale: 2.4;
+        opacity: 0;
     }
 }
 
 
 /* =========================================================
    14. BUTTONS — pill shape
-   Primary: soft violet gradient
-   Outline: transparent with border
+
+   - Primary: violet gradient + inset top highlight (premium depth)
+   - Hover: glow + lift + brightening
+   - Outline: transparent pill, tight accent ring on hover
 ========================================================= */
 .btn,
 .btn-small {
@@ -849,8 +912,9 @@ section {
     font-size: 0.78rem;
     font-weight: 600;
     letter-spacing: 0.015em;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transition:
-        box-shadow 0.25s ease,
+        box-shadow 0.3s ease,
         translate 0.25s ease,
         filter 0.25s ease,
         border-color 0.25s ease,
@@ -860,18 +924,20 @@ section {
 
 .btn:hover,
 .btn-small:hover {
-    box-shadow: var(--glow);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        var(--glow);
     translate: 0 -2px;
     filter: brightness(1.06);
 }
 
-/* Dark mode: lavender accent is light — dark text on it */
+/* Dark mode: lavender accent is light — use dark text on it */
 [data-theme="dark"] .btn,
 [data-theme="dark"] .btn-small {
     color: #1a1625;
 }
 
-/* Outline variant — overrides above */
+/* Outline variant — transparent pill */
 .btn.outline,
 .btn-small.outline {
     background: transparent;
@@ -910,7 +976,7 @@ section {
    Label:   ring fills violet, dashed border fades out,
             rotation pauses, label text appears
 ========================================================= */
-@media (hover: hover) and (pointer: fine) {
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
 
     body,
     body * {
@@ -981,7 +1047,8 @@ section {
 
     /* Label — hidden by default (font-size 0) */
     .cursor-label {
-        position: relative; /* above ::before */
+        position: relative;
+        /* above ::before */
         z-index: 1;
         font-size: 0;
         font-weight: 600;
@@ -1030,7 +1097,8 @@ section {
    16. REDUCED MOTION
 ========================================================= */
 @media (prefers-reduced-motion: reduce) {
-    .status-indicator {
+    .status-indicator,
+    .status-indicator::after {
         animation: none;
     }
 

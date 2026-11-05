@@ -279,15 +279,41 @@ delay 1.8s = waits for the intro clip-reveal to finish
     });
 
     /* =========================================================
-       MARQUEE
-    ========================================================= */
+    MARQUEE
+
+    Why 2 clones?
+    ─────────────
+    With only 1 clone (2 tracks), a gap flashes on the right
+    edge at the end of each 30s loop on wide screens. Two
+    clones = 3 total tracks. Since each track is ~2600px on
+    desktop, 3 tracks = ~7800px of coverage — plenty for any
+    monitor up to 5K, with zero seam gap.
+
+    Why 6 items in HTML?
+    ────────────────────
+    .marquee-item:nth-child(even) alternates the styling.
+    With 5 items, the loop seam showed serif→serif. With 6
+    items (serif, sans, serif, sans, serif, sans) the seam
+    is serif→sans, so alternation stays perfect across the
+    invisible loop boundary.
+ ========================================================= */
     const marqueeTrack = document.querySelector('.marquee-track');
     if (marqueeTrack) {
-        const clone = marqueeTrack.cloneNode(true);
-        clone.setAttribute('aria-hidden', 'true');
-        marqueeTrack.parentNode.appendChild(clone);
+        // Create two clones so the strip never reveals a gap
+        const clone1 = marqueeTrack.cloneNode(true);
+        const clone2 = marqueeTrack.cloneNode(true);
 
-        gsap.to([marqueeTrack, clone], {
+        // Screen readers should only read the original track
+        clone1.setAttribute('aria-hidden', 'true');
+        clone2.setAttribute('aria-hidden', 'true');
+
+        // Append both after the original
+        marqueeTrack.parentNode.appendChild(clone1);
+        marqueeTrack.parentNode.appendChild(clone2);
+
+        // Animate all three together — each moves -100% of its own width,
+        // so the loop is perfectly seamless
+        gsap.to([marqueeTrack, clone1, clone2], {
             xPercent: -100,
             repeat: -1,
             duration: 30,
