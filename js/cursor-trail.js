@@ -27,11 +27,13 @@
     const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
 
-    // Hard bail before any DOM work if either guard is active.
-    // This means mobile / tablet / reduced-motion users
+       // Hard bail before any DOM work if any guard is active.
+    // Mobile / tablet / reduced-motion / lite-mode users
     // never get the extra canvas at all.
     if (reduceMotionQuery.matches) return;
     if (!finePointerQuery.matches) return;
+    if (document.documentElement.getAttribute('data-perf') === 'lite') return;
+
 
     /* ---------- Tunables ---------- */
     const MAX_PARTICLES = 50;          // hard cap, matches spec (45–55)
@@ -373,6 +375,13 @@
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) stopLoop();
         // Loop restarts automatically on the next spawn after the user moves
+    });
+
+     /* ---------- Dynamic lite-mode downgrade (M4) ---------- */
+    window.addEventListener('perfchange', function () {
+        trailEnabled = false;
+        particles.length = 0;
+        stopLoop();
     });
 
     /* ---------- Init ---------- */

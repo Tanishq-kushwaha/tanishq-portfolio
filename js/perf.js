@@ -16,7 +16,7 @@
     const WINDOW_MS = 1500;
     const FPS_THRESHOLD = 42;
     const MAX_STRIKES = 2;
-    const START_DELAY_MS = 4000; // loader (~2.25s) + intro (~1.7s) ke baad
+    const START_DELAY_MS = 2500; // intro tail ke baad — trigger ~5.5s (was ~7s)
 
     let frames = 0, windowStart = 0, strikes = 0, active = false;
 

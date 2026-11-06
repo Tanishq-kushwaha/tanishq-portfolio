@@ -563,10 +563,10 @@
         }
     });
 
-    // Light mouse parallax — desktop pointers only, never with reduced motion
+    // Light mouse parallax — desktop pointers only, never with reduced motion or lite mode
     if (finePointer) {
         window.addEventListener('pointermove', function (e) {
-            if (reduceMotionQuery.matches) return;
+            if (reduceMotionQuery.matches || isLite()) return;
             targetPX = (e.clientX / (width || 1)) * 2 - 1;
             targetPY = (e.clientY / (height || 1)) * 2 - 1;
         }, { passive: true });

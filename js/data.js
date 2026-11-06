@@ -6,3 +6,10 @@ aboutMe.innerText =
 const contact = document.querySelector("#contact-text");
 contact.innerText =
     "I am always open to discussing new projects, creative ideas, or opportunities to collaborate on innovative web applications. Whether you want to build a clean user interface from scratch, optimize your existing codebase, or simply talk about programming logic and clean architecture, feel free to drop a message. Let's connect and build something valuable together.";
+
+
+
+    
+// Dynamic copyright year — footer ka #year span auto-update
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
