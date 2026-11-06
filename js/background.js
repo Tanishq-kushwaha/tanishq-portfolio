@@ -38,6 +38,7 @@
     const root = document.documentElement;
     const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
     const TAU = Math.PI * 2;
 
@@ -46,9 +47,9 @@
        dropped into rgba() when the glow sprites are built. */
     const PALETTES = {
         dark: {
-            ember:      '255, 154, 92',   // --accent         #ff9a5c
-            emberHot:   '255, 183, 122',  // --accent-strong  #ffb77a
-            haze:       '124, 92, 255',   // --accent-2       #7c5cff
+            ember: '255, 154, 92',   // --accent         #ff9a5c
+            emberHot: '255, 183, 122',  // --accent-strong  #ffb77a
+            haze: '124, 92, 255',   // --accent-2       #7c5cff
 
             // Embers per million viewport pixels (scaled, see getScaledCount)
             baseEmberCount: 190,
@@ -72,13 +73,13 @@
             hazeRadiusMax: 320
         },
         light: {
-            mote:       '194, 65, 12',    // --accent    #c2410c
-            speck:      '167, 139, 250',  // --accent-2  #a78bfa
+            mote: '194, 65, 12',    // --accent    #c2410c
+            speck: '167, 139, 250',  // --accent-2  #a78bfa
 
             baseMoteCount: 150,
             // Big soft colour orbs that give the light page depth
             mistCount: 7,
-            mistWarm:   '232, 121, 70',   // peach-ember (lighter than --accent so it stays airy)
+            mistWarm: '232, 121, 70',   // peach-ember (lighter than --accent so it stays airy)
             mistRadiusMin: 180,
             mistRadiusMax: 340,
             // Fraction of motes that are violet specks
@@ -103,7 +104,7 @@
     let mists = [];
     let width = 0;
     let height = 0;
-    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let dpr = isTouchDevice ? 1 : Math.min(window.devicePixelRatio || 1, 2);
     let rafId = null;
     let lastTime = 0;
 
@@ -145,13 +146,13 @@
     const HAZE_STOPS = [[0, 0.55], [0.4, 0.22], [0.75, 0.06], [1, 0]];
 
     const sprites = {
-        ember:    buildSprite(PALETTES.dark.ember,    64,  CORE_STOPS),
-        emberHot: buildSprite(PALETTES.dark.emberHot, 64,  CORE_STOPS),
-        haze:     buildSprite(PALETTES.dark.haze,     256, HAZE_STOPS),
-        mote:     buildSprite(PALETTES.light.mote,    64,  CORE_STOPS),
-        speck:    buildSprite(PALETTES.light.speck,   64,  CORE_STOPS),
+        ember: buildSprite(PALETTES.dark.ember, 64, CORE_STOPS),
+        emberHot: buildSprite(PALETTES.dark.emberHot, 64, CORE_STOPS),
+        haze: buildSprite(PALETTES.dark.haze, 256, HAZE_STOPS),
+        mote: buildSprite(PALETTES.light.mote, 64, CORE_STOPS),
+        speck: buildSprite(PALETTES.light.speck, 64, CORE_STOPS),
         mistWarm: buildSprite(PALETTES.light.mistWarm, 256, HAZE_STOPS),
-        mistViolet: buildSprite(PALETTES.light.speck,  256, HAZE_STOPS)
+        mistViolet: buildSprite(PALETTES.light.speck, 256, HAZE_STOPS)
     };
 
     /* ---------- Particle factories ---------- */
@@ -240,16 +241,25 @@
        Small screens get fewer, big screens get more. */
     function getScaledCount(baseCount) {
         const areaMP = (window.innerWidth * window.innerHeight) / 1_000_000;
-        return Math.max(20, Math.round(baseCount * Math.min(areaMP, 2)));
+        let count = Math.round(baseCount * Math.min(areaMP, 2));
+
+        if (isTouchDevice) {
+            count = Math.round(count * 0.4);
+            return Math.max(30, count);
+        }
+
+        return Math.max(20, count);
     }
 
     function rebuildParticles() {
         const emberCount = getScaledCount(PALETTES.dark.baseEmberCount);
         const moteCount = getScaledCount(PALETTES.light.baseMoteCount);
         // Fewer haze orbs on small screens
-        const hazeCount = width < 700
-            ? Math.max(3, Math.round(PALETTES.dark.hazeCount / 2))
-            : PALETTES.dark.hazeCount;
+        const hazeCount = isTouchDevice
+            ? 3
+            : (width < 700
+                ? Math.max(3, Math.round(PALETTES.dark.hazeCount / 2))
+                : PALETTES.dark.hazeCount);
 
         embers = new Array(emberCount);
         for (let i = 0; i < emberCount; i += 1) embers[i] = createEmber();
@@ -257,9 +267,11 @@
         hazes = new Array(hazeCount);
         for (let i = 0; i < hazeCount; i += 1) hazes[i] = createHaze();
 
-        const mistCount = width < 700
-            ? Math.max(3, Math.round(PALETTES.light.mistCount / 2))
-            : PALETTES.light.mistCount;
+        const mistCount = isTouchDevice
+            ? 3
+            : (width < 700
+                ? Math.max(3, Math.round(PALETTES.light.mistCount / 2))
+                : PALETTES.light.mistCount);
         mists = new Array(mistCount);
         for (let i = 0; i < mistCount; i += 1) mists[i] = createMist(i);
 
@@ -269,7 +281,7 @@
 
     /* ---------- Resize ---------- */
     function resize() {
-        dpr = Math.min(window.devicePixelRatio || 1, 2); // Retina cap for memory
+        dpr = isTouchDevice ? 1 : Math.min(window.devicePixelRatio || 1, 2);
         width = window.innerWidth;
         height = window.innerHeight;
         canvas.width = Math.floor(width * dpr);
