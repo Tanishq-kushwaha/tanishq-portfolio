@@ -782,7 +782,11 @@ section {
 .project-card {
     position: relative;
     padding: 36px 30px;
-    background: var(--surface-raised);
+    /* Translucent theme-aware glass: lets the animated page background show through. */
+    background: var(--surface-raised); /* fallback for browsers without color-mix() */
+    background: color-mix(in srgb, var(--surface-raised) 82%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.12);
+    backdrop-filter: blur(14px) saturate(1.12);
     border: 1px solid var(--line);
     border-radius: 18px;
     box-shadow: var(--shadow);
@@ -885,7 +889,11 @@ section {
 
 .cert-card {
     padding: 32px 28px;
-    background: var(--surface-raised);
+    /* Match project cards while allowing the animated background to breathe through. */
+    background: var(--surface-raised); /* fallback for browsers without color-mix() */
+    background: color-mix(in srgb, var(--surface-raised) 82%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.12);
+    backdrop-filter: blur(14px) saturate(1.12);
     border: 1px solid var(--line);
     border-radius: 18px;
     box-shadow: var(--shadow);
