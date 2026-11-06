@@ -141,12 +141,6 @@ button {
     background: var(--bg);
 }
 
-/* Hide unused decorations. NOTE: .bg-layer::before (mesh gradient)
-   and .bg-layer::after (noise texture) are both USED — don't hide. */
-.bg-gradient,
-.cursor-glow {
-    display: none !important;
-}
 
 /* Mesh gradient — light mode */
 .bg-layer::before {
@@ -340,6 +334,14 @@ nav {
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
+
+/* Hamburger is a <div> in HTML, but our JS adds role="button" +
+   tabindex="0" so it becomes keyboard-focusable on mobile.
+   Give it a matching focus ring (border-radius 8px, outline follows). */
+.hamburger:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
 
 /* =========================================================
    06. MAIN LAYOUT & SECTION FRAMEWORK
@@ -943,13 +945,16 @@ section {
 
 @keyframes status-ping {
     0% {
-        scale: 0.7;
-        opacity: 0.9;
+        scale: 0.6;
+        opacity: 0.7;
     }
 
-    80%,
+    70% {
+        opacity: 0;
+    }
+
     100% {
-        scale: 2.4;
+        scale: 2.2;
         opacity: 0;
     }
 }
@@ -993,6 +998,17 @@ section {
         var(--glow);
     translate: 0 -2px;
     filter: brightness(1.06);
+}
+
+/* Subtle press-down on click. Resets the hover lift and dims very
+   slightly — gives tactile "button responds" feedback without any
+   layout shift. Quicker transition-duration (0.1s) so the press
+   feels immediate, not animated. */
+.btn:active,
+.btn-small:active {
+    translate: 0 0;
+    filter: brightness(0.97);
+    transition-duration: 0.1s;
 }
 
 /* Dark mode: cyan accent is light — use dark text on it */
@@ -1502,12 +1518,17 @@ section {
    Modern browsers understand it; older ones ignore the rule
    entirely (safe — they keep default browser outline).
 ========================================================= */
+
+/* NOTE: Do NOT add `border-radius` here. The `outline` property
+   already follows the element's own border-radius in modern
+   browsers. Adding border-radius here would shrink pill buttons
+   (theme toggle, .btn, .skill-tag) to 2px rectangles the moment
+   they receive keyboard focus. */
 a:focus-visible,
 button:focus-visible,
 .skill-tag:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
-    border-radius: 2px;
 }
 
 .nav-links a:focus-visible {

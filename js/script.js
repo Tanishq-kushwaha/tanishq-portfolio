@@ -116,15 +116,34 @@
     const hamburger = document.getElementById('hamburger');
     const navMenu = document.getElementById('nav-menu');
 
-    hamburger?.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        navMenu.classList.toggle('active');
-    });
+    if (hamburger) {
+        // The hamburger is a <div> in HTML — make it behave like a button
+        // so keyboard and screen-reader users can open the mobile menu.
+        hamburger.setAttribute('role', 'button');
+        hamburger.setAttribute('tabindex', '0');
+        hamburger.setAttribute('aria-label', 'Toggle navigation menu');
+        hamburger.setAttribute('aria-expanded', 'false');
+
+        // Enter / Space should toggle it just like a click
+        hamburger.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                hamburger.click();
+            }
+        });
+
+        hamburger.addEventListener('click', () => {
+            const expanded = hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active', expanded);
+            hamburger.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
 
     document.querySelectorAll('.nav-links a').forEach((link) => {
         link.addEventListener('click', () => {
             hamburger?.classList.remove('active');
             navMenu?.classList.remove('active');
+            hamburger?.setAttribute('aria-expanded', 'false');
         });
     });
 
@@ -135,13 +154,10 @@
             el.style.clipPath = 'inset(0)';
         });
 
-        // Hide loader instantly — no 2s wait for users who opted out of motion
         const loaderEl = document.getElementById('loader');
         if (loaderEl) loaderEl.classList.add('is-hidden');
         document.body.classList.remove('is-loading');
 
-        // Progress bar fallback — GSAP won't run, so update directly
-        // on scroll. No easing/scrub, but functional and honest.
         const progressBar = document.querySelector('.scroll-progress');
         if (progressBar) {
             const updateProgress = () => {
@@ -153,9 +169,20 @@
             updateProgress();
         }
 
+        // FIX: if GSAP failed to load (or reduced-motion is on),
+        // .scroll-cue stays at opacity: 0 forever, because only the
+        // intro timeline was setting it to 0.7. Force it visible
+        // here so the cue isn't permanently invisible for no-GSAP users.
+        // (Reduced-motion CSS already forces opacity: 0.7 !important,
+        // so this mainly helps the GSAP-failed case.)
+        const scrollCueEl = document.querySelector('.scroll-cue');
+        if (scrollCueEl) {
+            scrollCueEl.style.opacity = '0.7';
+            scrollCueEl.classList.add('is-ready');
+        }
+
         return;
     }
-
     /* =========================================================
        STEP 3 — SMOOTH SCROLL (Lenis) + ScrollTrigger
        =========================================================
@@ -401,6 +428,7 @@
     const introTl = gsap.timeline({ paused: true, defaults: { ease: 'power4.out' } });
 
     introTl
+        .from('.hero-eyebrow', { y: 14, opacity: 0, duration: 0.7 }, 0.05)
         .from('.hero-content h1', { y: 60, opacity: 0, duration: 1 }, 0.1)
         .fromTo('.hero-image img',
             { clipPath: 'inset(0 0 100% 0)' },
