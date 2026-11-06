@@ -1719,3 +1719,76 @@ body.is-loading {
         transition: none;
     }
 }
+
+/* =========================================================
+   20. LITE MODE — low-power devices
+   Auto-enabled by inline head heuristic + js/perf.js watchdog.
+   Sirf GPU-expensive effects band karta hai, design same rehta hai.
+========================================================= */
+
+/* Huge inset shadow on fixed layer = costly paint */
+[data-perf="lite"] .bg-layer {
+    box-shadow: none;
+}
+
+/* Drifting mesh repaints full viewport every frame */
+[data-perf="lite"] .bg-layer::before {
+    animation: none !important;
+    will-change: auto;
+}
+
+/* mix-blend-mode: overlay = extra compositing pass */
+[data-perf="lite"] .bg-layer::after {
+    display: none;
+}
+
+/* backdrop-filter re-blurs EVERY scroll frame — #1 scroll killer */
+[data-perf="lite"] header.sticky {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--bg);
+}
+
+[data-perf="lite"] .project-card,
+[data-perf="lite"] .cert-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--surface-raised);
+    transform-style: flat;
+}
+
+/* Large hover glow repaint cost */
+[data-perf="lite"] .project-card:hover,
+[data-perf="lite"] .cert-card:hover {
+    box-shadow: var(--shadow);
+}
+
+/* Photo filter forces per-frame compositing layer */
+[data-perf="lite"] .hero-image img,
+[data-perf="lite"] .hero-image img:hover {
+    filter: none;
+    will-change: auto;
+}
+
+[data-perf="lite"] .scroll-progress {
+    box-shadow: none;
+}
+
+[data-perf="lite"] #bg-canvas {
+    opacity: 0.55;
+}
+[data-perf="lite"][data-theme="dark"] #bg-canvas {
+    opacity: 0.75;
+}
+
+/* Bonus: touch devices ko 3D context ki zarurat nahi
+   (tilt sirf fine pointer pe chalta hai) */
+@media (hover: none), (pointer: coarse) {
+    .project-card,
+    .cert-card {
+        transform-style: flat;
+    }
+    .hero-image img {
+        will-change: auto;
+    }
+}

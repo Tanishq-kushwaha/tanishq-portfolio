@@ -46,6 +46,32 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="icon" type="image/png" href="assets/favicon.png">
+
+    <!-- Performance tier detection — heavy styles se pehle chalta hai -->
+    <script>
+        (function () {
+            try {
+                var root = document.documentElement;
+                var params = new URLSearchParams(location.search);
+                var force = params.get('perf'); // ?perf=lite ya ?perf=full se test kar sakte ho
+
+                if (force === 'full') { root.setAttribute('data-perf', 'full'); return; }
+                if (force === 'lite') { root.setAttribute('data-perf', 'lite'); return; }
+
+                var cores = navigator.hardwareConcurrency || 4;
+                var mem = navigator.deviceMemory || 4;
+                var conn = navigator.connection;
+                var saveData = conn && conn.saveData;
+                var slowNet = conn && /(^|-)2g$/.test(conn.effectiveType || '');
+
+                // Conservative heuristic — sirf obvious weak devices ko pakadta hai.
+                // Baaki kaam runtime FPS watchdog (js/perf.js) karega.
+                if (cores <= 4 || mem <= 2 || saveData || slowNet) {
+                    root.setAttribute('data-perf', 'lite');
+                }
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
     <link rel="stylesheet" href="styles.css">
 
     <script type="application/ld+json">
@@ -348,6 +374,8 @@
 
     <!-- premium cursor trail (if present) -->
     <script src="js/cursor-trail.js" defer></script>
+
+    <script src="js/perf.js" defer></script>
 </body>
 
 </html>

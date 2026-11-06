@@ -40,6 +40,9 @@
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
+    // NEW: lite mode helper
+    const isLite = () => root.getAttribute('data-perf') === 'lite';
+
     const TAU = Math.PI * 2;
 
     /* ---------- Tunable palettes ----------
@@ -238,14 +241,17 @@
     }
 
     /* Scale particle count by viewport area.
-       Small screens get fewer, big screens get more. */
+   Small screens get fewer, big screens get more.
+   Lite mode cuts to 30% — static frame pe bhi fewer draws. */
     function getScaledCount(baseCount) {
         const areaMP = (window.innerWidth * window.innerHeight) / 1_000_000;
         let count = Math.round(baseCount * Math.min(areaMP, 2));
 
+        if (isLite()) count = Math.round(count * 0.3);
+
         if (isTouchDevice) {
             count = Math.round(count * 0.4);
-            return Math.max(30, count);
+            return Math.max(12, count);
         }
 
         return Math.max(20, count);
@@ -495,11 +501,11 @@
     }
 
     function syncAnimationState() {
-        const isPaused = reduceMotionQuery.matches || document.hidden;
+        const isPaused = reduceMotionQuery.matches || document.hidden || isLite();
 
         if (isPaused) {
             stopAnimation();
-            if (reduceMotionQuery.matches && !document.hidden) {
+            if ((reduceMotionQuery.matches || isLite()) && !document.hidden) {
                 // Draw a static frame so the background isn't blank
                 drawStaticFrame();
             } else {
@@ -516,8 +522,8 @@
         const next = theme === 'dark' ? 'dark' : 'light';
         if (next === currentTheme && pendingTheme === null) return;
 
-        // Instant swap for users who prefer reduced motion
-        if (reduceMotionQuery.matches) {
+        // Instant swap for reduced-motion users AND lite mode
+        if (reduceMotionQuery.matches || isLite()) {
             currentTheme = next;
             pendingTheme = null;
             themeFade = 1;
@@ -525,6 +531,7 @@
             drawStaticFrame();
             return;
         }
+
 
         // Smooth path: fade current particles out, then fade new ones in
         pendingTheme = next;
@@ -542,6 +549,12 @@
         // Old Safari fallback
         reduceMotionQuery.addListener(syncAnimationState);
     }
+
+    // NEW: watchdog ne lite mode trigger kiya → particles rebuild + static frame
+    window.addEventListener('perfchange', function () {
+        rebuildParticles();
+        syncAnimationState();
+    });
 
     // script.js dispatches `themechange` when user toggles the theme
     document.addEventListener('themechange', function (event) {

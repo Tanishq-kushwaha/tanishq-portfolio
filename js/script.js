@@ -26,6 +26,8 @@
     const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const reduceMotion = reduceMotionQuery.matches;
     const isFine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    let liteMode = document.documentElement.getAttribute('data-perf') === 'lite';
+    window.addEventListener('perfchange', function () { liteMode = true; });
 
     /* ---------- Storage ---------- */
     const storage = {
@@ -467,8 +469,9 @@
         }, 1.95)
         .call(() => {
             ScrollTrigger.refresh();
+            // Intro animation khatam — will-change hatao, memory free
+            gsap.set('.hero-image img', { willChange: 'auto' });
         });
-
     /* =========================================================
        LOADING SCREEN
        ~1.8s count + 0.45s fade = ~2.25s total. Then introTl plays.
@@ -483,7 +486,7 @@
         gsap.timeline()
             .to(counter, {
                 v: 100,
-                duration: 1.8,
+                duration: 1.2,
                 ease: 'power2.inOut',
                 onUpdate: () => {
                     const val = Math.round(counter.v);
@@ -581,7 +584,7 @@
     /* =========================================================
        3D TILT ON CARDS
     ========================================================= */
-    if (isFine) {
+    if (isFine && !liteMode) {
         document.querySelectorAll('.project-card, .cert-card').forEach((card) => {
             gsap.set(card, { transformPerspective: 900 });
             const rotX = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power2' });
@@ -601,7 +604,7 @@
     /* =========================================================
        ELASTIC MAGNETIC BUTTONS
     ========================================================= */
-    if (isFine) {
+    if (isFine && !liteMode) {
         document.querySelectorAll('.btn, .btn-small').forEach((btn) => {
             const xTo = gsap.quickTo(btn, 'x', { duration: 0.7, ease: 'elastic.out(1, 0.3)' });
             const yTo = gsap.quickTo(btn, 'y', { duration: 0.7, ease: 'elastic.out(1, 0.3)' });
@@ -623,6 +626,7 @@
 
     ScrollTrigger.create({
         onUpdate: (self) => {
+            if (liteMode) return;
             const v = self.getVelocity();
             const skew = gsap.utils.clamp(-6, 6, v / -180);
             if (Math.abs(skew) > Math.abs(proxy.skew)) {
