@@ -425,9 +425,14 @@
                 repeat: -1
             });
         }, 1.7)
-        /* After intro completes, recalc ScrollTrigger positions —
-           otherwise triggers created during load may be offset by
-           the intro's initial .from() states. */
+        .to('.scroll-cue', {
+            opacity: 0.7,
+            duration: 0.6,
+            ease: 'power2.out',
+            onComplete: () => {
+                document.querySelector('.scroll-cue')?.classList.add('is-ready');
+            }
+        }, 1.95)
         .call(() => {
             ScrollTrigger.refresh();
         });

@@ -392,8 +392,8 @@ section {
 ========================================================= */
 .hero {
     position: relative;
-    min-height: min(880px, 100svh);
-    padding: 200px 0 140px;
+    min-height: min(820px, 100svh);
+    padding: 140px 0 100px;
     display: grid;
     grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
     align-items: center;
@@ -405,8 +405,7 @@ section {
     z-index: 1;
 }
 
-.hero-content::before {
-    content: "INDEPENDENT DEVELOPER  ·  KANPUR, INDIA";
+.hero-eyebrow {
     display: block;
     margin-bottom: 44px;
     color: var(--muted);
@@ -511,11 +510,7 @@ section {
     border-radius: 50%;
 }
 
-/* Scroll cue */
-/* Scroll cue — gentle pulse + drift to hint at scroll affordance.
-   Reduced-motion block below will pause this animation. */
-.hero::after {
-    content: "SCROLL ↓";
+.scroll-cue {
     position: absolute;
     bottom: 48px;
     left: 0;
@@ -523,23 +518,27 @@ section {
     font-size: 0.6rem;
     font-weight: 600;
     letter-spacing: 0.32em;
-    animation: scroll-cue 2.4s ease-in-out infinite;
+    opacity: 0;
+    pointer-events: none;
+    animation: scroll-cue-pulse 2.4s ease-in-out infinite;
+    animation-play-state: paused;
 }
 
-@keyframes scroll-cue {
+.scroll-cue.is-ready {
+    animation-play-state: running;
+}
+
+@keyframes scroll-cue-pulse {
 
     0%,
     100% {
-        opacity: 0.55;
         transform: translateY(0);
     }
 
     50% {
-        opacity: 1;
         transform: translateY(4px);
     }
 }
-
 
 /* =========================================================
    08. MARQUEE
@@ -760,7 +759,7 @@ section {
     margin-bottom: 24px;
 }
 
-/* First card (ZenDoc) — featured, full width */
+/* First card (ZenDoc) — featured, full width, premium padding */
 .projects-grid .project-card:first-child {
     grid-column: 1 / -1;
     padding: 48px 44px;
@@ -769,10 +768,11 @@ section {
 .projects-grid .project-card:first-child h3 {
     font-family: Georgia, "Times New Roman", serif;
     font-weight: 400;
-    font-size: clamp(1.6rem, 2.8vw, 2.2rem);
-    letter-spacing: -0.02em;
-    margin-bottom: 16px;
+    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    letter-spacing: -0.025em;
+    margin-bottom: 18px;
     max-width: 22ch;
+    line-height: 1.15;
 }
 
 .projects-grid .project-card:first-child p {
@@ -1199,8 +1199,12 @@ section {
 
     .status-indicator,
     .status-indicator::after,
-    .hero::after {
+    .scroll-cue {
         animation: none !important;
+    }
+
+    .scroll-cue {
+        opacity: 0.7 !important;
     }
 
     html {
@@ -1308,11 +1312,11 @@ section {
     }
 
     .hero {
-        padding: 160px 0 100px;
+        padding: 120px 0 100px;
         gap: 56px;
     }
 
-    .hero::after {
+    .scroll-cue {
         display: none;
     }
 
@@ -1341,7 +1345,7 @@ section {
         line-height: 0.96;
     }
 
-    .hero-content::before {
+    .hero-eyebrow {
         margin-bottom: 28px;
         font-size: 0.62rem;
         letter-spacing: 0.18em;
