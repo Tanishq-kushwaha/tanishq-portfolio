@@ -1,5 +1,5 @@
 /* =========================================================
-   Tani$hq Portfolio — Modern Violet Theme
+   Tani$hq Portfolio — Modern Teal Theme
    Single-file stylesheet. Flat surfaces, soft glow, editorial type.
 
    Structure:
@@ -25,35 +25,35 @@
 
 /* =========================================================
    01. THEME VARIABLES
-   Light: warm cream + soft violet
-   Dark:  near-black + lavender glow
+   Light: warm stone + teal
+   Dark:  near-black + cyan glow
 ========================================================= */
 :root {
     color-scheme: light;
 
     /* Surfaces */
-    --bg: #faf8f5;
-    --surface: #f3eefb;
+    --bg: #f7f6f3;
+    --surface: #efece6;
     --surface-raised: #ffffff;
 
     /* Text */
-    --ink: #1a1625;
-    --muted: #6b6480;
+    --ink: #12141a;
+    --muted: #5c6370;
 
     /* Borders */
-    --line: #e7e0f2;
+    --line: #e4e0d8;
 
-    /* Accent — soft violet */
-    --accent: #7c5cff;
-    --accent-strong: #5b3fd9;
-    --accent-soft: #efe9ff;
+    /* Accent — teal */
+    --accent: #0d9488;
+    --accent-strong: #0f766e;
+    --accent-soft: #ccfbf1;
 
     /* Navigation (glass) */
-    --nav-bg: rgba(250, 248, 245, 0.72);
+    --nav-bg: rgba(247, 246, 243, 0.78);
 
     /* Depth */
-    --shadow: 0 14px 36px rgba(124, 92, 255, 0.08);
-    --glow: 0 20px 60px rgba(124, 92, 255, 0.18);
+    --shadow: 0 14px 40px rgba(13, 148, 136, 0.08);
+    --glow: 0 0 50px rgba(13, 148, 136, 0.18);
 
     /* Layout */
     --max-width: 1160px;
@@ -62,23 +62,23 @@
 [data-theme="dark"] {
     color-scheme: dark;
 
-    --bg: #0b0c10;
-    --surface: #12131a;
-    --surface-raised: #171923;
+    --bg: #0a0a0c;
+    --surface: #111114;
+    --surface-raised: #16161a;
 
-    --ink: #f0edf8;
-    --muted: #8b87a0;
+    --ink: #f0f2f5;
+    --muted: #8b919e;
 
-    --line: #232533;
+    --line: #23232a;
 
-    --accent: #a78bfa;
-    --accent-strong: #c4b5fd;
-    --accent-soft: #241d3d;
+    --accent: #00d4c8;
+    --accent-strong: #00e5c7;
+    --accent-soft: #0d3330;
 
-    --nav-bg: rgba(11, 12, 16, 0.72);
+    --nav-bg: rgba(10, 10, 12, 0.75);
 
-    --shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
-    --glow: 0 0 60px rgba(167, 139, 250, 0.35);
+    --shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+    --glow: 0 0 55px rgba(0, 212, 200, 0.28);
 }
 
 
@@ -149,17 +149,17 @@ button {
     inset: 0;
     pointer-events: none;
     background:
-        radial-gradient(ellipse 800px 600px at 15% 20%, rgba(124, 92, 255, 0.10), transparent 60%),
-        radial-gradient(ellipse 700px 500px at 85% 80%, rgba(255, 140, 200, 0.08), transparent 60%),
-        radial-gradient(ellipse 900px 600px at 50% 100%, rgba(100, 180, 255, 0.07), transparent 60%);
+        radial-gradient(ellipse 800px 600px at 15% 20%, rgba(13, 148, 136, 0.10), transparent 60%),
+        radial-gradient(ellipse 700px 500px at 85% 80%, rgba(0, 180, 180, 0.07), transparent 60%),
+        radial-gradient(ellipse 900px 600px at 50% 100%, rgba(20, 160, 190, 0.06), transparent 60%);
 }
 
-/* Mesh gradient — dark mode (stronger, lavender glow) */
+/* Mesh gradient — dark mode (stronger, cyan glow) */
 [data-theme="dark"] .bg-layer::before {
     background:
-        radial-gradient(ellipse 900px 700px at 15% 20%, rgba(124, 92, 255, 0.18), transparent 60%),
-        radial-gradient(ellipse 800px 600px at 85% 80%, rgba(167, 139, 250, 0.14), transparent 60%),
-        radial-gradient(ellipse 1000px 700px at 50% 100%, rgba(100, 140, 255, 0.10), transparent 60%);
+        radial-gradient(ellipse 900px 700px at 15% 20%, rgba(0, 212, 200, 0.15), transparent 60%),
+        radial-gradient(ellipse 800px 600px at 85% 80%, rgba(0, 180, 180, 0.12), transparent 60%),
+        radial-gradient(ellipse 1000px 700px at 50% 100%, rgba(30, 200, 210, 0.08), transparent 60%);
 }
 
 /* Noise texture overlay — subtle film grain for editorial premium feel.
@@ -194,7 +194,7 @@ button {
    04. SCROLL PROGRESS
 ========================================================= */
 /* Bar + soft outer glow — reads as a living indicator, not a ruler.
-   `var(--accent)` auto-switches between light-violet and lavender. */
+   `var(--accent)` auto-switches between teal and cyan. */
 .scroll-progress {
     position: fixed;
     inset: 0 auto auto 0;
@@ -678,7 +678,7 @@ section {
 /* =========================================================
    10. PROJECTS — bento grid
 
-   - Cards: rounded, elevated, accent border + violet glow on hover
+   - Cards: rounded, elevated, accent border + teal glow on hover
    - Number badge: CSS counter (01, 02, ...) — no HTML attribute needed
      → counter-reset lives on .projects-grid, counter-increment on card
    - Hover uses `translate` property (not `transform`) so GSAP 3D tilt
@@ -786,7 +786,7 @@ section {
 
 /* =========================================================
    11. CERTIFICATIONS
-   Same premium feel as projects — rounded, elevated, violet hover.
+   Same premium feel as projects — rounded, elevated, teal hover.
 ========================================================= */
 .certificates-grid {
     display: grid;
@@ -949,7 +949,7 @@ section {
 /* =========================================================
    14. BUTTONS — pill shape
 
-   - Primary: violet gradient + inset top highlight (premium depth)
+   - Primary: teal gradient + inset top highlight (premium depth)
    - Hover: glow + lift + brightening
    - Outline: transparent pill, tight accent ring on hover
 ========================================================= */
@@ -986,10 +986,10 @@ section {
     filter: brightness(1.06);
 }
 
-/* Dark mode: lavender accent is light — use dark text on it */
+/* Dark mode: cyan accent is light — use dark text on it */
 [data-theme="dark"] .btn,
 [data-theme="dark"] .btn-small {
-    color: #1a1625;
+    color: #0a0a0c;
 }
 
 /* Outline variant — transparent pill */
@@ -1028,7 +1028,7 @@ section {
    translate + transform compose correctly.
 
    Default: solid dot + rotating dashed ring
-   Label:   ring fills violet, dashed border fades out,
+   Label:   ring fills teal, dashed border fades out,
             rotation pauses, label text appears
 ========================================================= */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
@@ -1060,7 +1060,7 @@ section {
         will-change: transform;
     }
 
-    /* Small solid violet dot */
+    /* Small solid teal dot */
     .cursor-dot {
         width: 5px;
         height: 5px;
@@ -1116,9 +1116,9 @@ section {
         transition: font-size 0.25s ease;
     }
 
-    /* Dark mode: white text on lavender fails contrast — use dark ink */
+    /* Dark mode: white text on cyan fails contrast — use dark ink */
     [data-theme="dark"] .cursor-label {
-        color: #1a1625;
+        color: #0a0a0c;
     }
 
     /* Label mode: ring fills + grows, dashed border fades out */
@@ -1151,6 +1151,17 @@ section {
     .cursor-ring {
         display: none;
     }
+}
+
+/* Cursor trail canvas — created by js/cursor-trail.js.
+   Kept here in case inline styles are stripped or overridden. */
+#cursor-trail-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9998;
 }
 
 /* =========================================================

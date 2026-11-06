@@ -2,13 +2,13 @@
    js/background.js
    Theme-aware animated background — advanced edition.
 
-   Dark theme  -> twinkling stars with soft violet glow
-   Light theme -> drifting violet dust with organic breathing
+   Dark theme  -> twinkling stars with soft cyan glow
+   Light theme -> drifting teal dust with organic breathing
 
    Improvements over previous version:
    - More particles (scaled by viewport area)
    - Soft glow around stars (shadowBlur)
-   - Dust tinted violet to match the new theme accent
+   - Dust tinted teal to match the new theme accent
    - Slower, more organic motion (dual-sine waves, non-repetitive)
    - Smooth fade between themes (no jarring snap)
    - Reduced-motion + tab-hidden support preserved
@@ -32,9 +32,10 @@
     /* ---------- Tunable palettes ---------- */
     const PALETTES = {
         dark: {
-            // Most stars are near-white; ~30% get a lavender tint for depth
-            starColor: '222, 226, 255',
-            starColorAlt: '200, 190, 255',
+            // Most stars are near-white with a cool cyan cast;
+            // ~30% get a stronger cyan tint for depth
+            starColor: '220, 238, 240',
+            starColorAlt: '180, 235, 235',
 
             // How many stars per million pixels of viewport (scaled)
             baseStarCount: 130,
@@ -52,11 +53,11 @@
 
             // Soft halo around each star
             glowBlur: 8,
-            glowColor: '180, 170, 255'
+            glowColor: '0, 212, 200'
         },
         light: {
-            // Matches the theme's violet accent
-            dustColor: '167, 139, 250',
+            // Matches the theme's teal accent
+            dustColor: '13, 148, 136',
 
             baseDustCount: 110,
 
@@ -107,7 +108,7 @@
             twinkle: p.twinkleSpeedMin + Math.random() * (p.twinkleSpeedMax - p.twinkleSpeedMin),
             drift: (Math.random() - 0.5) * 2 * p.driftRange,
 
-            // ~30% of stars use the lavender tint
+            // ~30% of stars use the cyan tint
             useAlt: Math.random() < 0.3
         };
     }
