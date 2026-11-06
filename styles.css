@@ -119,7 +119,9 @@ html {
 body {
     min-width: 320px;
     overflow-x: hidden;
-    background: var(--bg);
+    /* No `background` here on purpose: <html> already paints --bg, and an
+       opaque body background would paint OVER the fixed z-index:-1
+       `.bg-layer` (mesh, grain, vignette, particle canvas), hiding it. */
     color: var(--ink);
     font-family: "Poppins", "Segoe UI", sans-serif;
     line-height: 1.7;
@@ -216,9 +218,20 @@ button {
 }
 
 @keyframes mesh-drift {
-    0%   { translate: -2% -1.5%;  scale: 1;    }
-    50%  { translate: 2% 1.8%;    scale: 1.07; }
-    100% { translate: -0.8% 2.2%; scale: 1.03; }
+    0% {
+        translate: -2% -1.5%;
+        scale: 1;
+    }
+
+    50% {
+        translate: 2% 1.8%;
+        scale: 1.07;
+    }
+
+    100% {
+        translate: -0.8% 2.2%;
+        scale: 1.03;
+    }
 }
 
 /* Film grain — fine, photographic. Inline SVG (feTurbulence),
