@@ -1,5 +1,5 @@
 /* =========================================================
-   Tani$hq Portfolio — Modern Teal Theme
+   Tani$hq Portfolio — Ember & Ink Theme
    Single-file stylesheet. Flat surfaces, soft glow, editorial type.
 
    Structure:
@@ -24,36 +24,43 @@
 
 
 /* =========================================================
-   01. THEME VARIABLES
-   Light: warm stone + teal
-   Dark:  near-black + cyan glow
+   01. THEME VARIABLES — "Ember & Ink"
+   Light: lilac paper + burnt orange
+   Dark:  aubergine-black + apricot ember, violet secondary glow
 ========================================================= */
 :root {
     color-scheme: light;
 
     /* Surfaces */
-    --bg: #f7f6f3;
-    --surface: #efece6;
-    --surface-raised: #ffffff;
+    --bg: #f1ecf3;
+    --surface: #e8e1ec;
+    --surface-raised: #fbf9fc;
 
     /* Text */
-    --ink: #12141a;
-    --muted: #5c6370;
+    --ink: #1a1222;
+    --muted: #6b5f78;
 
     /* Borders */
-    --line: #e4e0d8;
+    --line: #ddd3e2;
 
-    /* Accent — teal */
-    --accent: #0d9488;
-    --accent-strong: #0f766e;
-    --accent-soft: #ccfbf1;
+    /* Accent — burnt orange */
+    --accent: #c2410c;
+    --accent-strong: #9a3412;
+    --accent-soft: #ffe4d4;
+
+    /* Secondary glow — violet (used by mesh gradient + haze) */
+    --accent-2: #a78bfa;
+
+    /* Same colors as raw "R, G, B" for rgba() use */
+    --accent-rgb: 194, 65, 12;
+    --accent-2-rgb: 167, 139, 250;
 
     /* Navigation (glass) */
-    --nav-bg: rgba(247, 246, 243, 0.78);
+    --nav-bg: rgba(241, 236, 243, 0.78);
 
     /* Depth */
-    --shadow: 0 14px 40px rgba(13, 148, 136, 0.08);
-    --glow: 0 0 50px rgba(13, 148, 136, 0.18);
+    --shadow: 0 14px 40px rgba(90, 40, 60, 0.10);
+    --glow: 0 0 50px rgba(194, 65, 12, 0.20);
 
     /* Layout */
     --max-width: 1160px;
@@ -62,23 +69,28 @@
 [data-theme="dark"] {
     color-scheme: dark;
 
-    --bg: #0a0a0c;
-    --surface: #111114;
-    --surface-raised: #16161a;
+    --bg: #0f0b14;
+    --surface: #17111f;
+    --surface-raised: #1e1728;
 
-    --ink: #f0f2f5;
-    --muted: #8b919e;
+    --ink: #f3ece4;
+    --muted: #9a8fa6;
 
-    --line: #23232a;
+    --line: #2b2236;
 
-    --accent: #00d4c8;
-    --accent-strong: #00e5c7;
-    --accent-soft: #0d3330;
+    --accent: #ff9a5c;
+    --accent-strong: #ffb77a;
+    --accent-soft: #2e1d1f;
 
-    --nav-bg: rgba(10, 10, 12, 0.75);
+    --accent-2: #7c5cff;
+
+    --accent-rgb: 255, 154, 92;
+    --accent-2-rgb: 124, 92, 255;
+
+    --nav-bg: rgba(15, 11, 20, 0.75);
 
     --shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
-    --glow: 0 0 55px rgba(0, 212, 200, 0.28);
+    --glow: 0 0 55px rgba(255, 154, 92, 0.26);
 }
 
 
@@ -138,55 +150,88 @@ button {
     inset: 0;
     z-index: -1;
     pointer-events: none;
+    overflow: hidden;
     background: var(--bg);
+
+    /* Vignette — darkens the edges so the centre feels lit.
+       Inset shadow paints above the bg but below the mesh, so the
+       translucent colour blobs glow on top of it. */
+    box-shadow: inset 0 0 240px 40px rgba(8, 4, 14, 0.18);
+}
+
+[data-theme="dark"] .bg-layer {
+    box-shadow: inset 0 0 260px 60px rgba(4, 2, 8, 0.65);
 }
 
 
-/* Mesh gradient — light mode */
+/* Mesh gradient — light mode.
+   Oversized (-12%) so it can drift slowly without exposing edges.
+   Colours come from --accent-rgb / --accent-2-rgb, so they follow the
+   theme automatically. Animated with `translate`/`scale` only
+   (compositor-friendly, no repaint per frame). */
 .bg-layer::before {
     content: "";
     position: absolute;
-    inset: 0;
+    inset: -12%;
     pointer-events: none;
     background:
-        radial-gradient(ellipse 800px 600px at 15% 20%, rgba(13, 148, 136, 0.10), transparent 60%),
-        radial-gradient(ellipse 700px 500px at 85% 80%, rgba(0, 180, 180, 0.07), transparent 60%),
-        radial-gradient(ellipse 900px 600px at 50% 100%, rgba(20, 160, 190, 0.06), transparent 60%);
+        radial-gradient(ellipse 900px 700px at 12% 16%, rgba(var(--accent-rgb), 0.13), transparent 62%),
+        radial-gradient(ellipse 800px 650px at 90% 20%, rgba(var(--accent-2-rgb), 0.20), transparent 62%),
+        radial-gradient(ellipse 900px 700px at 82% 92%, rgba(var(--accent-rgb), 0.09), transparent 62%),
+        radial-gradient(ellipse 1000px 700px at 28% 100%, rgba(var(--accent-2-rgb), 0.14), transparent 62%),
+        radial-gradient(ellipse 600px 450px at 55% 50%, rgba(var(--accent-rgb), 0.05), transparent 70%);
+    animation: mesh-drift 38s ease-in-out infinite alternate;
+    will-change: translate, scale;
 }
 
-/* Mesh gradient — dark mode (stronger, cyan glow) */
+/* Mesh gradient — dark mode: richer, deeper, violet + ember */
 [data-theme="dark"] .bg-layer::before {
     background:
-        radial-gradient(ellipse 900px 700px at 15% 20%, rgba(0, 212, 200, 0.15), transparent 60%),
-        radial-gradient(ellipse 800px 600px at 85% 80%, rgba(0, 180, 180, 0.12), transparent 60%),
-        radial-gradient(ellipse 1000px 700px at 50% 100%, rgba(30, 200, 210, 0.08), transparent 60%);
+        radial-gradient(ellipse 950px 720px at 12% 16%, rgba(var(--accent-rgb), 0.20), transparent 62%),
+        radial-gradient(ellipse 850px 680px at 90% 20%, rgba(var(--accent-2-rgb), 0.28), transparent 62%),
+        radial-gradient(ellipse 950px 720px at 82% 92%, rgba(var(--accent-rgb), 0.12), transparent 62%),
+        radial-gradient(ellipse 1050px 720px at 28% 100%, rgba(var(--accent-2-rgb), 0.20), transparent 62%),
+        radial-gradient(ellipse 650px 480px at 55% 50%, rgba(var(--accent-rgb), 0.07), transparent 70%);
 }
 
-/* Noise texture overlay — subtle film grain for editorial premium feel.
-   Inline SVG (feTurbulence) = zero HTTP requests, scales infinitely,
-   works on both themes. `mix-blend-mode: overlay` adapts to any bg. */
+@keyframes mesh-drift {
+    0%   { translate: -1.5% -1%;  scale: 1;    }
+    50%  { translate: 1.5% 1.2%;  scale: 1.05; }
+    100% { translate: -0.5% 1.5%; scale: 1.02; }
+}
+
+/* Noise texture overlay — fine film grain for editorial premium feel.
+   Inline SVG (feTurbulence) = zero HTTP requests, scales infinitely.
+   Higher base frequency + 3 octaves = finer, more photographic grain.
+   `mix-blend-mode: overlay` adapts to any bg. */
 .bg-layer::after {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
     background-repeat: repeat;
-    opacity: 0.045;
+    opacity: 0.06;
     mix-blend-mode: overlay;
 }
 
 [data-theme="dark"] .bg-layer::after {
-    opacity: 0.07;
+    opacity: 0.11;
 }
 
-/* Canvas sits on top of the mesh (particles only, transparent bg) */
+/* Canvas sits on top of the mesh (particles only, transparent bg).
+   background.js draws near-full-alpha particles; this opacity is the
+   master visibility dial per theme. */
 #bg-canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.12;
+    opacity: 0.25;
+}
+
+[data-theme="dark"] #bg-canvas {
+    opacity: 0.42;
 }
 
 
@@ -194,7 +239,7 @@ button {
    04. SCROLL PROGRESS
 ========================================================= */
 /* Bar + soft outer glow — reads as a living indicator, not a ruler.
-   `var(--accent)` auto-switches between teal and cyan. */
+   `var(--accent)` auto-switches between burnt orange and apricot. */
 .scroll-progress {
     position: fixed;
     inset: 0 auto auto 0;
@@ -688,7 +733,7 @@ section {
 /* =========================================================
    10. PROJECTS — bento grid
 
-   - Cards: rounded, elevated, accent border + teal glow on hover
+   - Cards: rounded, elevated, accent border + ember glow on hover
    - Number badge: CSS counter (01, 02, ...) — no HTML attribute needed
      → counter-reset lives on .projects-grid, counter-increment on card
    - Hover uses `translate` property (not `transform`) so GSAP 3D tilt
@@ -797,7 +842,7 @@ section {
 
 /* =========================================================
    11. CERTIFICATIONS
-   Same premium feel as projects — rounded, elevated, teal hover.
+   Same premium feel as projects — rounded, elevated, ember hover.
 ========================================================= */
 .certificates-grid {
     display: grid;
@@ -963,7 +1008,7 @@ section {
 /* =========================================================
    14. BUTTONS — pill shape
 
-   - Primary: teal gradient + inset top highlight (premium depth)
+   - Primary: ember gradient + inset top highlight (premium depth)
    - Hover: glow + lift + brightening
    - Outline: transparent pill, tight accent ring on hover
 ========================================================= */
@@ -1011,10 +1056,10 @@ section {
     transition-duration: 0.1s;
 }
 
-/* Dark mode: cyan accent is light — use dark text on it */
+/* Dark mode: apricot accent is light — use dark text on it */
 [data-theme="dark"] .btn,
 [data-theme="dark"] .btn-small {
-    color: #0a0a0c;
+    color: #0f0b14;
 }
 
 /* Outline variant — transparent pill */
@@ -1053,7 +1098,7 @@ section {
    translate + transform compose correctly.
 
    Default: solid dot + rotating dashed ring
-   Label:   ring fills teal, dashed border fades out,
+   Label:   ring fills accent, dashed border fades out,
             rotation pauses, label text appears
 ========================================================= */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
@@ -1085,7 +1130,7 @@ section {
         will-change: transform;
     }
 
-    /* Small solid teal dot */
+    /* Small solid accent dot */
     .cursor-dot {
         width: 5px;
         height: 5px;
@@ -1141,9 +1186,9 @@ section {
         transition: font-size 0.25s ease;
     }
 
-    /* Dark mode: white text on cyan fails contrast — use dark ink */
+    /* Dark mode: white text on apricot fails contrast — use dark ink */
     [data-theme="dark"] .cursor-label {
-        color: #0a0a0c;
+        color: #0f0b14;
     }
 
     /* Label mode: ring fills + grows, dashed border fades out */

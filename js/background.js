@@ -1,20 +1,30 @@
 /* =========================================================
    js/background.js
-   Theme-aware animated background — advanced edition.
+   Theme-aware animated background — "Ember & Ink" edition.
 
-   Dark theme  -> twinkling stars with soft cyan glow
-   Light theme -> drifting teal dust with organic breathing
+   Dark theme  -> rising apricot embers (3 depth layers, twinkling)
+                  + large soft violet haze orbs drifting behind them
+   Light theme -> soft burnt-orange motes with a few violet specks,
+                  slow organic drift and breathing
 
-   Improvements over previous version:
-   - More particles (scaled by viewport area)
-   - Soft glow around stars (shadowBlur)
-   - Dust tinted teal to match the new theme accent
-   - Slower, more organic motion (dual-sine waves, non-repetitive)
-   - Smooth fade between themes (no jarring snap)
-   - Reduced-motion + tab-hidden support preserved
-   - dpr cap preserved for performance
+   What changed vs. the teal version
+   - Palette: apricot / ember / violet instead of cyan / teal
+   - Pre-rendered glow SPRITES instead of ctx.shadowBlur
+     (much cheaper per frame, softer falloff)
+   - Particles are drawn at high alpha — the on-screen visibility is
+     controlled by `#bg-canvas { opacity }` in styles.css
+     (0.42 dark / 0.25 light)
+   - 3 depth layers (far / mid / near) + very light mouse parallax
+   - Frame-time normalised motion (same speed on 60 / 120 / 144 Hz)
 
-   Tweak the PALETTES object if you want more or fewer particles.
+   Kept from before
+   - Smooth theme cross-fade (fade out -> swap -> fade in)
+   - Reduced-motion support (static frame, instant theme swap)
+   - Pause when the tab is hidden
+   - DPR cap of 2, particle count scaled by viewport area
+
+   Colours: if you change --accent / --accent-2 in styles.css,
+   update the RGB strings in PALETTES below.
    ========================================================= */
 
 (function () {
@@ -26,49 +36,54 @@
     const ctx = canvas.getContext('2d');
     const root = document.documentElement;
     const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
     const TAU = Math.PI * 2;
 
-    /* ---------- Tunable palettes ---------- */
+    /* ---------- Tunable palettes ----------
+       All colours are "R, G, B" strings (no alpha) so they can be
+       dropped into rgba() when the glow sprites are built. */
     const PALETTES = {
         dark: {
-            // Most stars are near-white with a cool cyan cast;
-            // ~30% get a stronger cyan tint for depth
-            starColor: '220, 238, 240',
-            starColorAlt: '180, 235, 235',
+            ember:      '255, 154, 92',   // --accent         #ff9a5c
+            emberHot:   '255, 183, 122',  // --accent-strong  #ffb77a
+            haze:       '124, 92, 255',   // --accent-2       #7c5cff
 
-            // How many stars per million pixels of viewport (scaled)
-            baseStarCount: 130,
+            // Embers per million viewport pixels (scaled, see getScaledCount)
+            baseEmberCount: 120,
+            // Large soft violet orbs (a few is plenty)
+            hazeCount: 6,
 
-            // Twinkle speed (lower = slower, more elegant)
-            twinkleSpeedMin: 0.004,
-            twinkleSpeedMax: 0.018,
+            // Ember radius range (CSS px) — scaled further by depth layer
+            emberRadiusMin: 0.7,
+            emberRadiusMax: 2.4,
 
-            // Size range in CSS pixels
-            starRadiusMin: 0.3,
-            starRadiusMax: 1.8,
+            // Rise speed (px per 1/60 s frame) — scaled by depth layer
+            riseMin: 0.05,
+            riseMax: 0.30,
 
-            // Very slow horizontal crawl
-            driftRange: 0.02,
+            // Twinkle speed (rad per ms)
+            twinkleMin: 0.0008,
+            twinkleMax: 0.0034,
 
-            // Soft halo around each star
-            glowBlur: 8,
-            glowColor: '0, 212, 200'
+            // Haze orb radius range (CSS px)
+            hazeRadiusMin: 160,
+            hazeRadiusMax: 320
         },
         light: {
-            // Matches the theme's teal accent
-            dustColor: '13, 148, 136',
+            mote:       '194, 65, 12',    // --accent    #c2410c
+            speck:      '167, 139, 250',  // --accent-2  #a78bfa
 
-            baseDustCount: 110,
+            baseMoteCount: 90,
+            // Fraction of motes that are violet specks
+            speckChance: 0.22,
 
-            dustRadiusMin: 0.6,
-            dustRadiusMax: 3.4,
+            moteRadiusMin: 1.0,
+            moteRadiusMax: 4.2,
 
-            // Slower drift = more organic floating
-            driftSpeedMin: 0.02,
-            driftSpeedMax: 0.10,
+            driftSpeedMin: 0.03,
+            driftSpeedMax: 0.14,
 
-            // Each particle breathes at its own pace
             pulseSpeedMin: 0.0006,
             pulseSpeedMax: 0.0016
         }
@@ -76,12 +91,14 @@
 
     /* ---------- State ---------- */
     let currentTheme = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-    let stars = [];
-    let dust = [];
+    let embers = [];
+    let hazes = [];
+    let motes = [];
     let width = 0;
     let height = 0;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
     let rafId = null;
+    let lastTime = 0;
 
     // Smooth theme transition state
     // themeFade: 1 = fully visible, 0 = invisible
@@ -91,45 +108,104 @@
     let pendingTheme = null;
     const THEME_FADE_SPEED = 0.12;
 
+    // Mouse parallax (normalised -1..1, eased)
+    let targetPX = 0;
+    let targetPY = 0;
+    let px = 0;
+    let py = 0;
+    const PARALLAX_PX = 22; // max shift for the nearest layer
+
+    /* ---------- Glow sprites ----------
+       Drawn once, reused for every particle every frame. */
+    function buildSprite(rgb, size, stops) {
+        const off = document.createElement('canvas');
+        off.width = size;
+        off.height = size;
+        const octx = off.getContext('2d');
+        const c = size / 2;
+        const grad = octx.createRadialGradient(c, c, 0, c, c, c);
+        for (let i = 0; i < stops.length; i += 1) {
+            grad.addColorStop(stops[i][0], 'rgba(' + rgb + ', ' + stops[i][1] + ')');
+        }
+        octx.fillStyle = grad;
+        octx.fillRect(0, 0, size, size);
+        return off;
+    }
+
+    // Tight bright core + soft halo (embers, motes)
+    const CORE_STOPS = [[0, 1], [0.18, 0.95], [0.45, 0.35], [1, 0]];
+    // Very soft, wide falloff (haze orbs)
+    const HAZE_STOPS = [[0, 0.55], [0.4, 0.22], [0.75, 0.06], [1, 0]];
+
+    const sprites = {
+        ember:    buildSprite(PALETTES.dark.ember,    64,  CORE_STOPS),
+        emberHot: buildSprite(PALETTES.dark.emberHot, 64,  CORE_STOPS),
+        haze:     buildSprite(PALETTES.dark.haze,     256, HAZE_STOPS),
+        mote:     buildSprite(PALETTES.light.mote,    64,  CORE_STOPS),
+        speck:    buildSprite(PALETTES.light.speck,   64,  CORE_STOPS)
+    };
+
     /* ---------- Particle factories ---------- */
 
-    function createStar() {
+    // depth: 0.35 (far, small, slow, dim) -> 1 (near, big, fast, bright)
+    function createEmber() {
         const p = PALETTES.dark;
+        const depth = 0.35 + Math.random() * 0.65;
         return {
             x: Math.random() * width,
             y: Math.random() * height,
-            r: p.starRadiusMin + Math.random() * (p.starRadiusMax - p.starRadiusMin),
-            baseAlpha: 0.35 + Math.random() * 0.5,
+            depth: depth,
+            r: (p.emberRadiusMin + Math.random() * (p.emberRadiusMax - p.emberRadiusMin)) * (0.6 + depth * 0.6),
+            baseAlpha: (0.45 + Math.random() * 0.5) * (0.55 + depth * 0.45),
+            rise: (p.riseMin + Math.random() * (p.riseMax - p.riseMin)) * depth,
+
+            // Gentle horizontal sway
+            swayAmp: 0.05 + Math.random() * 0.18,
+            swaySpeed: 0.0003 + Math.random() * 0.0009,
 
             // Two phases so the twinkle never repeats in a simple loop
             phaseA: Math.random() * TAU,
             phaseB: Math.random() * TAU,
+            twinkle: p.twinkleMin + Math.random() * (p.twinkleMax - p.twinkleMin),
 
-            twinkle: p.twinkleSpeedMin + Math.random() * (p.twinkleSpeedMax - p.twinkleSpeedMin),
-            drift: (Math.random() - 0.5) * 2 * p.driftRange,
-
-            // ~30% of stars use the cyan tint
-            useAlt: Math.random() < 0.3
+            // ~25% of embers are the brighter, paler apricot
+            hot: Math.random() < 0.25
         };
     }
 
-    function createDust() {
-        const p = PALETTES.light;
-        const speed = p.driftSpeedMin + Math.random() * (p.driftSpeedMax - p.driftSpeedMin);
+    function createHaze() {
+        const p = PALETTES.dark;
         const angle = Math.random() * TAU;
+        const speed = 0.03 + Math.random() * 0.07;
         return {
             x: Math.random() * width,
             y: Math.random() * height,
-            r: p.dustRadiusMin + Math.random() * (p.dustRadiusMax - p.dustRadiusMin),
-            baseAlpha: 0.15 + Math.random() * 0.35,
+            r: p.hazeRadiusMin + Math.random() * (p.hazeRadiusMax - p.hazeRadiusMin),
+            baseAlpha: 0.45 + Math.random() * 0.4,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
+            phase: Math.random() * TAU,
+            pulseSpeed: 0.0002 + Math.random() * 0.0004
+        };
+    }
 
-            // Two phases + individual pulse speed = each dust particle
-            // breathes differently (organic, no synchronized rhythm)
+    function createMote() {
+        const p = PALETTES.light;
+        const speed = p.driftSpeedMin + Math.random() * (p.driftSpeedMax - p.driftSpeedMin);
+        const angle = Math.random() * TAU;
+        const depth = 0.4 + Math.random() * 0.6;
+        return {
+            x: Math.random() * width,
+            y: Math.random() * height,
+            depth: depth,
+            r: (p.moteRadiusMin + Math.random() * (p.moteRadiusMax - p.moteRadiusMin)) * (0.7 + depth * 0.5),
+            baseAlpha: 0.45 + Math.random() * 0.5,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
             phaseA: Math.random() * TAU,
             phaseB: Math.random() * TAU,
-            pulseSpeed: p.pulseSpeedMin + Math.random() * (p.pulseSpeedMax - p.pulseSpeedMin)
+            pulseSpeed: p.pulseSpeedMin + Math.random() * (p.pulseSpeedMax - p.pulseSpeedMin),
+            speck: Math.random() < p.speckChance
         };
     }
 
@@ -141,14 +217,21 @@
     }
 
     function rebuildParticles() {
-        const starCount = getScaledCount(PALETTES.dark.baseStarCount);
-        const dustCount = getScaledCount(PALETTES.light.baseDustCount);
+        const emberCount = getScaledCount(PALETTES.dark.baseEmberCount);
+        const moteCount = getScaledCount(PALETTES.light.baseMoteCount);
+        // Fewer haze orbs on small screens
+        const hazeCount = width < 700
+            ? Math.max(3, Math.round(PALETTES.dark.hazeCount / 2))
+            : PALETTES.dark.hazeCount;
 
-        stars = new Array(starCount);
-        for (let i = 0; i < starCount; i += 1) stars[i] = createStar();
+        embers = new Array(emberCount);
+        for (let i = 0; i < emberCount; i += 1) embers[i] = createEmber();
 
-        dust = new Array(dustCount);
-        for (let i = 0; i < dustCount; i += 1) dust[i] = createDust();
+        hazes = new Array(hazeCount);
+        for (let i = 0; i < hazeCount; i += 1) hazes[i] = createHaze();
+
+        motes = new Array(moteCount);
+        for (let i = 0; i < moteCount; i += 1) motes[i] = createMote();
     }
 
     /* ---------- Resize ---------- */
@@ -165,78 +248,101 @@
         syncAnimationState();
     }
 
-    /* ---------- Draw functions ---------- */
+    /* ---------- Draw functions ----------
+       `time` is ms (for sine waves), `step` is the frame-time
+       multiplier (1 = one 60 Hz frame; 0 = don't move, used by
+       the static reduced-motion frame). */
 
-    function drawStars(time) {
-        const p = PALETTES.dark;
+    function drawDark(time, step) {
+        // Additive blending -> embers and haze genuinely glow where they overlap
+        ctx.globalCompositeOperation = 'lighter';
 
-        // Soft glow — set once per frame, applies to all stars drawn below.
-        // NOTE: shadowBlur is comparatively expensive. If you notice lag on
-        // low-end phones, reduce baseStarCount or lower glowBlur.
-        ctx.shadowBlur = p.glowBlur;
-        ctx.shadowColor = 'rgb(' + p.glowColor + ')';
+        // 1. Violet haze (behind everything)
+        for (let i = 0; i < hazes.length; i += 1) {
+            const h = hazes[i];
+            const pulse = 0.75 + Math.sin(time * h.pulseSpeed + h.phase) * 0.25;
+            const s = h.r * 2;
 
-        for (let i = 0; i < stars.length; i += 1) {
-            const star = stars[i];
+            ctx.globalAlpha = Math.max(0, h.baseAlpha * pulse * themeFade);
+            ctx.drawImage(sprites.haze, h.x - h.r, h.y - h.r, s, s);
 
-            // Layered twinkle — combine two slow sine waves at different
-            // speeds. The result feels organic instead of a repetitive pulse.
-            const twinkleA = Math.sin(time * star.twinkle + star.phaseA);
-            const twinkleB = Math.sin(time * star.twinkle * 0.6 + star.phaseB);
-            const twinkle = (twinkleA + twinkleB) * 0.5;
-
-            const alpha = Math.max(0, (star.baseAlpha + twinkle * 0.25) * themeFade);
-
-            ctx.fillStyle = star.useAlt
-                ? 'rgb(' + p.starColorAlt + ')'
-                : 'rgb(' + p.starColor + ')';
-            ctx.globalAlpha = alpha;
-
-            ctx.beginPath();
-            ctx.arc(star.x, star.y, star.r, 0, TAU);
-            ctx.fill();
-
-            // Slow horizontal drift with wrap-around
-            star.x += star.drift;
-            if (star.x < 0) star.x = width;
-            else if (star.x > width) star.x = 0;
+            h.x += h.vx * step;
+            h.y += h.vy * step;
+            // Wrap once the orb is fully off-screen
+            if (h.x < -h.r) h.x = width + h.r;
+            else if (h.x > width + h.r) h.x = -h.r;
+            if (h.y < -h.r) h.y = height + h.r;
+            else if (h.y > height + h.r) h.y = -h.r;
         }
 
-        // Reset shared canvas state so the next frame starts clean
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
-    }
+        // 2. Embers
+        for (let i = 0; i < embers.length; i += 1) {
+            const e = embers[i];
 
-    function drawDust(time) {
-        const p = PALETTES.light;
-        ctx.fillStyle = 'rgb(' + p.dustColor + ')';
+            // Layered twinkle — two slow sine waves at different speeds
+            const tA = Math.sin(time * e.twinkle + e.phaseA);
+            const tB = Math.sin(time * e.twinkle * 0.6 + e.phaseB);
+            const twinkle = (tA + tB) * 0.5;
 
-        for (let i = 0; i < dust.length; i += 1) {
-            const d = dust[i];
-
-            // Two slow sine waves at slightly different speeds = organic
-            // "breathing" that never lands on a fixed rhythm.
-            const pulseA = Math.sin(time * d.pulseSpeed + d.phaseA);
-            const pulseB = Math.sin(time * d.pulseSpeed * 0.7 + d.phaseB);
-            const pulse = 0.6 + (pulseA + pulseB) * 0.2; // ~0.2 to 1.0
-
-            // Radius also breathes slightly — adds subtle depth
-            const radiusPulse = 0.85 + (pulseA + pulseB) * 0.1; // ~0.65 to 1.05x
-
-            const alpha = Math.max(0, d.baseAlpha * pulse * themeFade);
+            const alpha = Math.max(0, Math.min(1, e.baseAlpha + twinkle * 0.3) * themeFade);
+            const s = e.r * 7; // sprite diameter (halo included)
+            const dx = px * PARALLAX_PX * e.depth;
+            const dy = py * PARALLAX_PX * e.depth;
 
             ctx.globalAlpha = alpha;
-            ctx.beginPath();
-            ctx.arc(d.x, d.y, d.r * radiusPulse, 0, TAU);
-            ctx.fill();
+            ctx.drawImage(
+                e.hot ? sprites.emberHot : sprites.ember,
+                e.x + dx - s / 2,
+                e.y + dy - s / 2,
+                s, s
+            );
+
+            // Rise + sway, wrap from top back to bottom
+            e.y -= e.rise * step;
+            e.x += Math.sin(time * e.swaySpeed + e.phaseA) * e.swayAmp * step;
+            if (e.y < -s) {
+                e.y = height + s;
+                e.x = Math.random() * width;
+            }
+            if (e.x < -s) e.x = width + s;
+            else if (e.x > width + s) e.x = -s;
+        }
+
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+    }
+
+    function drawLight(time, step) {
+        // Normal compositing — additive would wash out on a light background
+        for (let i = 0; i < motes.length; i += 1) {
+            const m = motes[i];
+
+            // Two slow sine waves = organic "breathing"
+            const pulseA = Math.sin(time * m.pulseSpeed + m.phaseA);
+            const pulseB = Math.sin(time * m.pulseSpeed * 0.7 + m.phaseB);
+            const pulse = 0.65 + (pulseA + pulseB) * 0.175; // ~0.3 to 1.0
+            const radiusPulse = 0.85 + (pulseA + pulseB) * 0.1;
+
+            const alpha = Math.max(0, m.baseAlpha * pulse * themeFade);
+            const s = m.r * radiusPulse * 5;
+            const dx = px * PARALLAX_PX * 0.6 * m.depth;
+            const dy = py * PARALLAX_PX * 0.6 * m.depth;
+
+            ctx.globalAlpha = alpha;
+            ctx.drawImage(
+                m.speck ? sprites.speck : sprites.mote,
+                m.x + dx - s / 2,
+                m.y + dy - s / 2,
+                s, s
+            );
 
             // Drift + wrap
-            d.x += d.vx;
-            d.y += d.vy;
-            if (d.x < -10) d.x = width + 10;
-            else if (d.x > width + 10) d.x = -10;
-            if (d.y < -10) d.y = height + 10;
-            else if (d.y > height + 10) d.y = -10;
+            m.x += m.vx * step;
+            m.y += m.vy * step;
+            if (m.x < -20) m.x = width + 20;
+            else if (m.x > width + 20) m.x = -20;
+            if (m.y < -20) m.y = height + 20;
+            else if (m.y > height + 20) m.y = -20;
         }
 
         ctx.globalAlpha = 1;
@@ -246,6 +352,16 @@
 
     function animationFrame(now) {
         const time = now || performance.now();
+
+        // Frame-time multiplier (1 = 16.67 ms). Clamp so a tab
+        // switch or long frame doesn't teleport particles.
+        let step = lastTime ? (time - lastTime) / 16.667 : 1;
+        if (step > 3) step = 3;
+        lastTime = time;
+
+        // Ease the parallax offset toward the pointer
+        px += (targetPX - px) * 0.04;
+        py += (targetPY - py) * 0.04;
 
         // Smooth theme fade — only runs while a transition is in progress.
         // Phase 1: fade current particles out (target = 0)
@@ -269,9 +385,9 @@
         ctx.clearRect(0, 0, width, height);
 
         if (currentTheme === 'dark') {
-            drawStars(time);
+            drawDark(time, step);
         } else {
-            drawDust(time);
+            drawLight(time, step);
         }
 
         rafId = requestAnimationFrame(animationFrame);
@@ -288,15 +404,20 @@
         }
         themeFade = 1;
         themeFadeTarget = 1;
+        px = 0;
+        py = 0;
 
-        if (currentTheme === 'dark') drawStars(0);
-        else drawDust(0);
+        if (currentTheme === 'dark') drawDark(0, 0);
+        else drawLight(0, 0);
     }
 
     /* ---------- Control ---------- */
 
     function startAnimation() {
-        if (rafId === null) rafId = requestAnimationFrame(animationFrame);
+        if (rafId === null) {
+            lastTime = 0;
+            rafId = requestAnimationFrame(animationFrame);
+        }
     }
 
     function stopAnimation() {
@@ -361,6 +482,15 @@
             updateBackgroundTheme(event.detail.theme);
         }
     });
+
+    // Light mouse parallax — desktop pointers only, never with reduced motion
+    if (finePointer) {
+        window.addEventListener('pointermove', function (e) {
+            if (reduceMotionQuery.matches) return;
+            targetPX = (e.clientX / (width || 1)) * 2 - 1;
+            targetPY = (e.clientY / (height || 1)) * 2 - 1;
+        }, { passive: true });
+    }
 
     /* ---------- Boot ---------- */
     resize();

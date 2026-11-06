@@ -8,7 +8,7 @@
    - Subtle, editorial. NOT a neon explosion.
    - Soft glowing dots + occasional sparks + rare triangles.
    - 50-particle hard cap.
-   - Theme-aware (teal in light, cyan in dark).
+   - Theme-aware (burnt orange in light, apricot in dark).
    - Runs only on (hover: hover) + (pointer: fine),
      and only when prefers-reduced-motion is NOT set.
 
@@ -39,16 +39,16 @@
     const MAX_SPAWNS_PER_FRAME = 8;    // prevents burst on huge cursor jumps
 
     /* ---------- Theme colors ----------
-       Kept in sync with styles.css:
-         light  --accent        : #0d9488  → "13, 148, 136"
-         light  --accent-strong : #0f766e  → "15, 118, 110"
-         dark   --accent        : #00d4c8  → "0, 212, 200"
-         dark   --accent-strong : #00e5c7  → "0, 229, 199"
+       Kept in sync with styles.css (Ember & Ink):
+         light  --accent        : #c2410c  -> "194, 65, 12"
+         light  --accent-strong : #9a3412  -> "154, 52, 18"
+         dark   --accent        : #ff9a5c  -> "255, 154, 92"
+         dark   --accent-strong : #ffb77a  -> "255, 183, 122"
        Stored as "R, G, B" strings so we can build rgba() on the fly.
     */
     const THEME_COLORS = {
-        light: { primary: '13, 148, 136', secondary: '15, 118, 110' },
-        dark:  { primary: '0, 212, 200',  secondary: '0, 229, 199' }
+        light: { primary: '194, 65, 12',   secondary: '154, 52, 18' },
+        dark:  { primary: '255, 154, 92',  secondary: '255, 183, 122' }
     };
 
     let currentTheme =
