@@ -1781,6 +1781,10 @@ body.is-loading {
     opacity: 0.75;
 }
 
+[data-perf="lite"] .marquee-track {
+    will-change: auto;
+}
+
 /* Bonus: touch devices ko 3D context ki zarurat nahi
    (tilt sirf fine pointer pe chalta hai) */
 @media (hover: none), (pointer: coarse) {

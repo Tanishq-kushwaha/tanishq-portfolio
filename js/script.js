@@ -27,7 +27,18 @@
     const reduceMotion = reduceMotionQuery.matches;
     const isFine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     let liteMode = document.documentElement.getAttribute('data-perf') === 'lite';
-    window.addEventListener('perfchange', function () { liteMode = true; });
+    const skewSetter = hasGSAP ? gsap.quickSetter('main > section', 'skewY', 'deg') : null;
+    const skewProxy = { skew: 0 };
+
+    window.addEventListener('perfchange', function () {
+        liteMode = true;
+        // Bug 7 fix — agar skew mid-tween tha to section tilted na reh jaye
+        if (skewSetter) {
+            gsap.killTweensOf(skewProxy);
+            skewProxy.skew = 0;
+            skewSetter(0);
+        }
+    });
 
     /* ---------- Storage ---------- */
     const storage = {
@@ -182,6 +193,19 @@
             scrollCueEl.style.opacity = '0.7';
             scrollCueEl.classList.add('is-ready');
         }
+
+        const typedEl = document.getElementById('typed-name');
+        const roleEl2 = document.getElementById('dynamic-role');
+        if (typedEl) typedEl.textContent = 'Tanishq Kushwaha';
+        if (roleEl2) roleEl2.textContent = 'Junior Software Developer';
+
+        if (!hasGSAP) {
+            document.querySelectorAll('.cursor-dot, .cursor-ring').forEach((el) => {
+                el.style.display = 'none';
+            });
+            document.documentElement.style.setProperty('cursor', 'auto', 'important');
+        }
+
 
         return;
     }
@@ -591,6 +615,7 @@
             const rotY = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power2' });
 
             card.addEventListener('pointermove', (e) => {
+                if (liteMode) return;
                 const r = card.getBoundingClientRect();
                 const x = (e.clientX - r.left) / r.width - 0.5;
                 const y = (e.clientY - r.top) / r.height - 0.5;
@@ -610,6 +635,7 @@
             const yTo = gsap.quickTo(btn, 'y', { duration: 0.7, ease: 'elastic.out(1, 0.3)' });
 
             btn.addEventListener('pointermove', (e) => {
+                if (liteMode) return;
                 const r = btn.getBoundingClientRect();
                 xTo((e.clientX - (r.left + r.width / 2)) * 0.42);
                 yTo((e.clientY - (r.top + r.height / 2)) * 0.42);
@@ -619,29 +645,26 @@
     }
 
     /* =========================================================
-       SCROLL VELOCITY SKEW
-    ========================================================= */
-    const skewSetter = gsap.quickSetter('main > section', 'skewY', 'deg');
-    const proxy = { skew: 0 };
+     SCROLL VELOCITY SKEW
+  ========================================================= */
 
     ScrollTrigger.create({
         onUpdate: (self) => {
             if (liteMode) return;
             const v = self.getVelocity();
             const skew = gsap.utils.clamp(-6, 6, v / -180);
-            if (Math.abs(skew) > Math.abs(proxy.skew)) {
-                proxy.skew = skew;
-                gsap.to(proxy, {
+            if (Math.abs(skew) > Math.abs(skewProxy.skew)) {
+                skewProxy.skew = skew;
+                gsap.to(skewProxy, {
                     skew: 0,
                     duration: 0.9,
                     ease: 'power3',
                     overwrite: true,
-                    onUpdate: () => skewSetter(proxy.skew)
+                    onUpdate: () => skewSetter(skewProxy.skew)
                 });
             }
         }
     });
-
     /* =========================================================
        NUMBER COUNTERS
     ========================================================= */
