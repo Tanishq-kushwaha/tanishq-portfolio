@@ -94,7 +94,13 @@
 html {
     background: var(--bg);
     color: var(--ink);
-    scroll-behavior: smooth;
+    /* Lenis owns all scroll smoothing. Native `scroll-behavior: smooth`
+       would double-animate anchor jumps and fight Lenis's RAF loop —
+       so we opt out here. The CDN `lenis.css` also forces
+       `scroll-behavior: auto` via `!important` while `.lenis-smooth`
+       is active, but setting it to `auto` natively keeps the reduced-
+       motion / Lenis-destroyed path correct too. */
+    scroll-behavior: auto;
     scroll-padding-top: 96px;
 }
 
@@ -521,10 +527,13 @@ section {
 }
 
 @keyframes scroll-cue {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 0.55;
         transform: translateY(0);
     }
+
     50% {
         opacity: 1;
         transform: translateY(4px);

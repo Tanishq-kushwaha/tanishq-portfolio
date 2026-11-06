@@ -1,6 +1,12 @@
 /* =========================================================
    script.js — Advanced motion layer
    Custom cursor • split reveals • marquee • 3D tilt • skew
+
+   STEP 3 additions:
+   - Lenis smooth scroll driven by GSAP's single ticker
+   - Anchor links routed through Lenis (with focus management)
+   - Retimed reveals + batch stagger + light hero parallax
+   - Clean Lenis destroy when reduced-motion is toggled on
 ========================================================= */
 (function () {
     'use strict';
@@ -17,7 +23,8 @@
         ScrollTrigger.config({ ignoreMobileResize: true });
     }
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const reduceMotion = reduceMotionQuery.matches;
     const isFine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
     /* ---------- Storage ---------- */
@@ -50,11 +57,60 @@
         setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     });
 
-    /* ---------- Sticky header ---------- */
+    /* =========================================================
+     Sticky header + Active nav (unified)
+     ─────────────────────────────────────────────────────────
+     Both UI states derive from the same scroll position, so they
+     share one `syncScrollUI()` function. It runs on:
+       • native window `scroll` (baseline — fires for BOTH native
+         scroll and Lenis, since Lenis calls window.scrollTo on every
+         RAF; also the only listener that survives reduced-motion)
+       • Lenis `scroll` event (fires at RAF rate, no browser
+         throttling — more reliable on some devices)
+
+     Memo guards (lastSticky / lastActiveId) skip DOM writes when
+     nothing changed, so double-invocation per frame is free.
+
+     NOTE: This block runs BEFORE the reduced-motion bail, so the
+     native listener is always attached — sticky header and active
+     link keep working when Lenis is disabled or destroyed.
+  ========================================================= */
     const header = document.querySelector('header');
-    const onScroll = () => header.classList.toggle('sticky', window.scrollY > 0);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+    const navLinks = document.querySelectorAll('.nav-links a');
+    const sections = Array.from(navLinks)
+        .map((l) => document.querySelector(l.getAttribute('href')))
+        .filter(Boolean);
+
+    let lastSticky = null;
+    let lastActiveId = null;
+
+    const syncScrollUI = () => {
+        // 1. Sticky header
+        const shouldStick = window.scrollY > 0;
+        if (shouldStick !== lastSticky) {
+            header.classList.toggle('sticky', shouldStick);
+            lastSticky = shouldStick;
+        }
+
+        // 2. Active nav link (scan bottom-up for nearest section above viewport)
+        const cur = window.scrollY + 150;
+        for (let i = sections.length - 1; i >= 0; i--) {
+            if (cur >= sections[i].offsetTop) {
+                const id = '#' + sections[i].id;
+                if (id !== lastActiveId) {
+                    navLinks.forEach((l) =>
+                        l.classList.toggle('active', l.getAttribute('href') === id)
+                    );
+                    lastActiveId = id;
+                }
+                return;
+            }
+        }
+    };
+
+    window.addEventListener('scroll', syncScrollUI, { passive: true });
+    window.addEventListener('load', syncScrollUI);
+    syncScrollUI();
 
     /* ---------- Mobile nav ---------- */
     const hamburger = document.getElementById('hamburger');
@@ -72,25 +128,6 @@
         });
     });
 
-    /* ---------- Active nav link ---------- */
-    const navLinks = document.querySelectorAll('.nav-links a');
-    const sections = Array.from(navLinks)
-        .map((l) => document.querySelector(l.getAttribute('href')))
-        .filter(Boolean);
-
-    const updateActiveLink = () => {
-        const cur = window.scrollY + 150;
-        for (let i = sections.length - 1; i >= 0; i--) {
-            if (cur >= sections[i].offsetTop) {
-                const id = '#' + sections[i].id;
-                navLinks.forEach((l) => l.classList.toggle('active', l.getAttribute('href') === id));
-                return;
-            }
-        }
-    };
-
-    window.addEventListener('scroll', updateActiveLink, { passive: true });
-    window.addEventListener('load', updateActiveLink);
 
     /* ---------- Reduced motion / no GSAP — bail early ---------- */
     if (!hasGSAP || reduceMotion) {
@@ -117,6 +154,117 @@
         }
 
         return;
+    }
+
+    /* =========================================================
+       STEP 3 — SMOOTH SCROLL (Lenis) + ScrollTrigger
+       =========================================================
+       THE CORE IDEA
+       ─────────────
+       GSAP and Lenis both want their own requestAnimationFrame loop.
+       If they run separately, ScrollTrigger reads a scroll position
+       Lenis hasn't finished writing → scrubbed tweens stutter and
+       parallax drifts.
+
+       THE FIX (canonical, production pattern)
+       ───────────────────────────────────────
+       1. Create Lenis with `autoRaf: false` — GSAP owns the loop.
+       2. On every Lenis scroll → tell ScrollTrigger to re-read scroll.
+       3. Drive Lenis from gsap.ticker (ONE RAF for the whole page).
+          GSAP's ticker time is SECONDS; Lenis.raf() wants MILLISECONDS.
+       4. gsap.ticker.lagSmoothing(0) so scroll timing stays 1:1.
+
+       MOBILE
+       ──────
+       `syncTouch: false` (the default) — native iOS/Android momentum
+       is already excellent. Forcing Lenis's exponential follow on touch
+       is the #1 cause of “laggy on phone”. Touch keeps native feel;
+       mouse wheel gets the premium smoothing.
+
+       REDUCED MOTION
+       ──────────────
+       Lenis is never created (the early bail above already returned).
+       If the user flips the OS setting mid-session, we destroy Lenis
+       and remove the ticker callback → instant native scroll again.
+    ========================================================= */
+    let lenis = null;
+
+    if (typeof Lenis !== 'undefined') {
+        lenis = new Lenis({
+            autoRaf: false,                          // GSAP ticker drives it
+            duration: 1.2,                           // 1.1–1.3 = premium, not floaty
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expo-out
+            smoothWheel: true,
+            syncTouch: false,                        // native momentum on touch
+            wheelMultiplier: 1,
+            touchMultiplier: 1.15
+        });
+
+        // Every Lenis scroll tick → ScrollTrigger re-reads the position.
+        lenis.on('scroll', ScrollTrigger.update);
+
+        // Also drive the sticky header + active nav from Lenis directly.
+        // Fires at RAF rate (no browser throttling) → the active link
+        // tracks the smoothed scroll position exactly, without the tiny
+        // lag you get from waiting on native scroll events.
+        lenis.on('scroll', syncScrollUI);
+
+
+        // ONE RAF LOOP for the entire site.
+        const lenisTicker = (time) => lenis.raf(time * 1000);
+        gsap.ticker.add(lenisTicker);
+        gsap.ticker.lagSmoothing(0);
+
+        /* ---------- Anchor links through Lenis ----------
+           Native hash jumps would teleport the page and Lenis would
+           have to “catch up”. Route them through lenis.scrollTo so
+           the nav links glide. The existing mobile-menu close handler
+           still runs first (it was registered earlier and does not
+           preventDefault). External links are unaffected because the
+           selector only matches `href^="#"`.
+        -------------------------------------------------- */
+        document.querySelectorAll('a[href^="#"]').forEach((link) => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                if (!href || href === '#' || href.length < 2) return;
+
+                const target = document.querySelector(href);
+                if (!target) return;
+
+                // If Lenis was destroyed mid-session (user toggled
+                // reduced-motion ON), fall back to native anchor jump.
+                // Do NOT call preventDefault — let the browser handle it.
+                if (!lenis) return;
+
+                e.preventDefault();
+
+                // -90px ≈ header height + a little breathing room
+                lenis.scrollTo(target, { offset: -90, duration: 1.35 });
+
+                // Keep keyboard accessibility: move focus without a
+                // second scroll jump.
+                target.setAttribute('tabindex', '-1');
+                target.focus({ preventScroll: true });
+            });
+        });
+
+        /* ---------- Clean destroy on mid-session reduced-motion ---------- */
+        const onReduceMotionChange = (e) => {
+            if (!e.matches || !lenis) return;
+
+            gsap.ticker.remove(lenisTicker);
+            lenis.destroy();
+            lenis = null;
+
+            // Restore GSAP's default lag smoothing values
+            gsap.ticker.lagSmoothing(500, 33);
+        };
+
+        if (reduceMotionQuery.addEventListener) {
+            reduceMotionQuery.addEventListener('change', onReduceMotionChange);
+        } else if (reduceMotionQuery.addListener) {
+            reduceMotionQuery.addListener(onReduceMotionChange); // old Safari
+        }
     }
 
     /* =========================================================
@@ -324,25 +472,27 @@
 
     /* =========================================================
        SECTION HEADINGS — SPLIT REVEAL
+       STEP 3: slightly later start + smoother ease + longer
+       word duration = more editorial, less “pop-in”.
     ========================================================= */
     document.querySelectorAll('.section-head h2').forEach((h2) => {
         const words = splitWords(h2);
         if (!words.length) return;
 
-        gsap.set(words, { y: 30, opacity: 0, rotate: 2 });
+        gsap.set(words, { y: 34, opacity: 0, rotate: 2 });
 
         ScrollTrigger.create({
             trigger: h2,
-            start: 'top 85%',
+            start: 'top 83%',
             once: true,
             onEnter: () => {
                 gsap.to(words, {
                     y: 0,
                     opacity: 1,
                     rotate: 0,
-                    duration: 1.05,       // was 0.85 — slower = more elegant
-                    ease: 'power3.out',   // smoother than expo for word-by-word
-                    stagger: 0.09         // was 0.06 — wider gap between words
+                    duration: 1.15,
+                    ease: 'power4.out',
+                    stagger: 0.09
                 });
             }
         });
@@ -404,7 +554,7 @@
                 const r = card.getBoundingClientRect();
                 const x = (e.clientX - r.left) / r.width - 0.5;
                 const y = (e.clientY - r.top) / r.height - 0.5;
-                rotX(-y * 11);   // was 8 — more visible tilt
+                rotX(-y * 11);
                 rotY(x * 11);
             });
             card.addEventListener('pointerleave', () => { rotX(0); rotY(0); });
@@ -416,15 +566,11 @@
     ========================================================= */
     if (isFine) {
         document.querySelectorAll('.btn, .btn-small').forEach((btn) => {
-            // elastic.out(amplitude, period):
-            //   period 0.3 (was 0.4)  -> faster oscillation -> bouncier return
-            //   duration 0.7 (was 0.6) -> give the spring time to settle
             const xTo = gsap.quickTo(btn, 'x', { duration: 0.7, ease: 'elastic.out(1, 0.3)' });
             const yTo = gsap.quickTo(btn, 'y', { duration: 0.7, ease: 'elastic.out(1, 0.3)' });
 
             btn.addEventListener('pointermove', (e) => {
                 const r = btn.getBoundingClientRect();
-                // Pull 0.42 (was 0.35) -> more travel toward the cursor
                 xTo((e.clientX - (r.left + r.width / 2)) * 0.42);
                 yTo((e.clientY - (r.top + r.height / 2)) * 0.42);
             });
@@ -482,30 +628,84 @@
     });
 
     /* =========================================================
-       GENERIC REVEALS
+       STEP 3 — SCROLL STORYTELLING
+       =========================================================
+       Two small upgrades, deliberately restrained:
+
+       1. HERO PARALLAX
+          The wrapper moves, the inner <img> keeps its float.
+          No conflict: the intro float targets `.hero-image img`,
+          this targets `.hero-image`. scrub:true (no extra smoothing)
+          because Lenis is already smoothing the scroll.
+
+       2. REVEALS
+          Slightly later start (top 86% vs 88%), longer duration,
+          power4.out ease. Grid items (cards, skill tags) use
+          ScrollTrigger.batch so they cascade — one trigger per
+          viewport entry instead of one per element, which is both
+          cheaper and feels more intentional.
     ========================================================= */
+
+    /* Hero image parallax — very light, exits as the hero scrolls away */
+    gsap.to('.hero-image', {
+        yPercent: -10,
+        ease: 'none',
+        scrollTrigger: {
+            trigger: '.hero',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true
+        }
+    });
+
+    /* Single-element reveal — text blocks, buttons */
     const reveal = (selector, opts = {}) => {
         gsap.utils.toArray(selector).forEach((el) => {
             gsap.from(el, {
-                y: opts.y ?? 40,
+                y: opts.y ?? 44,
                 opacity: 0,
-                duration: opts.duration ?? 0.9,
-                ease: 'power3.out',
+                duration: opts.duration ?? 1.05,
+                ease: opts.ease ?? 'power4.out',
                 scrollTrigger: {
                     trigger: el,
-                    start: opts.start ?? 'top 88%',
+                    start: opts.start ?? 'top 86%',
                     once: true
                 }
             });
         });
     };
 
+    /* Batched reveal — grids: cards, certs, skill tags.
+       Set initial state once, then animate each batch with stagger.
+       `once: true` means no re-hiding on scroll-back. */
+    const revealStagger = (selector, opts = {}) => {
+        const els = gsap.utils.toArray(selector);
+        if (!els.length) return;
+
+        gsap.set(els, { y: opts.y ?? 56, opacity: 0 });
+
+        ScrollTrigger.batch(els, {
+            start: opts.start ?? 'top 86%',
+            once: true,
+            onEnter: (batch) => {
+                gsap.to(batch, {
+                    y: 0,
+                    opacity: 1,
+                    duration: opts.duration ?? 1.05,
+                    ease: opts.ease ?? 'power4.out',
+                    stagger: opts.stagger ?? 0.1
+                });
+            }
+        });
+    };
+
     reveal('.about-text');
-    reveal('.skill-tag', { y: 20, duration: 0.6 });
-    reveal('.project-card', { y: 50, duration: 1 });
-    reveal('.cert-card', { y: 40, duration: 0.8 });
     reveal('#contact-text');
-    reveal('.contact-links .btn', { y: 20, duration: 0.6 });
+    reveal('.contact-links .btn', { y: 18, duration: 0.7 });
+
+    revealStagger('.skill-tag', { y: 18, stagger: 0.045, duration: 0.55, start: 'top 90%' });
+    revealStagger('.project-card', { y: 56, stagger: 0.12, duration: 1.05 });
+    revealStagger('.cert-card', { y: 44, stagger: 0.1, duration: 0.95 });
 
     /* Footer — ONE trigger on the footer wrapper, not per-child.
        Why single trigger?
@@ -528,7 +728,7 @@
         gsap.from('.footer-container > *', {
             y: 30,
             opacity: 0,
-            duration: 0.7,
+            duration: 0.8,
             ease: 'power3.out',
             stagger: 0.1,
             scrollTrigger: {
@@ -539,13 +739,14 @@
         });
     }
 
-    /* Scroll progress bar */
+    /* Scroll progress bar — scrub:true so Lenis handles the smoothing,
+       not a second lerp layer (which reads as a laggy bar). */
     const progressBar = document.querySelector('.scroll-progress');
     if (progressBar) {
         gsap.to(progressBar, {
             scaleX: 1,
             ease: 'none',
-            scrollTrigger: { start: 0, end: 'max', scrub: 0.3 }
+            scrollTrigger: { start: 0, end: 'max', scrub: true }
         });
     }
 
