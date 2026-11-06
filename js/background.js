@@ -9,11 +9,12 @@
 
    What changed vs. the teal version
    - Palette: apricot / ember / violet instead of cyan / teal
+   - Light mode also gets soft peach/violet mist orbs for depth
    - Pre-rendered glow SPRITES instead of ctx.shadowBlur
      (much cheaper per frame, softer falloff)
    - Particles are drawn at high alpha — the on-screen visibility is
      controlled by `#bg-canvas { opacity }` in styles.css
-     (0.42 dark / 0.25 light)
+     (0.85 dark / 0.6 light)
    - 3 depth layers (far / mid / near) + very light mouse parallax
    - Frame-time normalised motion (same speed on 60 / 120 / 144 Hz)
 
@@ -50,13 +51,13 @@
             haze:       '124, 92, 255',   // --accent-2       #7c5cff
 
             // Embers per million viewport pixels (scaled, see getScaledCount)
-            baseEmberCount: 120,
+            baseEmberCount: 190,
             // Large soft violet orbs (a few is plenty)
-            hazeCount: 6,
+            hazeCount: 7,
 
             // Ember radius range (CSS px) — scaled further by depth layer
-            emberRadiusMin: 0.7,
-            emberRadiusMax: 2.4,
+            emberRadiusMin: 0.9,
+            emberRadiusMax: 3.1,
 
             // Rise speed (px per 1/60 s frame) — scaled by depth layer
             riseMin: 0.05,
@@ -74,12 +75,17 @@
             mote:       '194, 65, 12',    // --accent    #c2410c
             speck:      '167, 139, 250',  // --accent-2  #a78bfa
 
-            baseMoteCount: 90,
+            baseMoteCount: 150,
+            // Big soft colour orbs that give the light page depth
+            mistCount: 7,
+            mistWarm:   '232, 121, 70',   // peach-ember (lighter than --accent so it stays airy)
+            mistRadiusMin: 180,
+            mistRadiusMax: 340,
             // Fraction of motes that are violet specks
-            speckChance: 0.22,
+            speckChance: 0.3,
 
-            moteRadiusMin: 1.0,
-            moteRadiusMax: 4.2,
+            moteRadiusMin: 1.3,
+            moteRadiusMax: 5.4,
 
             driftSpeedMin: 0.03,
             driftSpeedMax: 0.14,
@@ -94,6 +100,7 @@
     let embers = [];
     let hazes = [];
     let motes = [];
+    let mists = [];
     let width = 0;
     let height = 0;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -142,7 +149,9 @@
         emberHot: buildSprite(PALETTES.dark.emberHot, 64,  CORE_STOPS),
         haze:     buildSprite(PALETTES.dark.haze,     256, HAZE_STOPS),
         mote:     buildSprite(PALETTES.light.mote,    64,  CORE_STOPS),
-        speck:    buildSprite(PALETTES.light.speck,   64,  CORE_STOPS)
+        speck:    buildSprite(PALETTES.light.speck,   64,  CORE_STOPS),
+        mistWarm: buildSprite(PALETTES.light.mistWarm, 256, HAZE_STOPS),
+        mistViolet: buildSprite(PALETTES.light.speck,  256, HAZE_STOPS)
     };
 
     /* ---------- Particle factories ---------- */
@@ -181,7 +190,7 @@
             x: Math.random() * width,
             y: Math.random() * height,
             r: p.hazeRadiusMin + Math.random() * (p.hazeRadiusMax - p.hazeRadiusMin),
-            baseAlpha: 0.45 + Math.random() * 0.4,
+            baseAlpha: 0.65 + Math.random() * 0.35,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             phase: Math.random() * TAU,
@@ -199,13 +208,31 @@
             y: Math.random() * height,
             depth: depth,
             r: (p.moteRadiusMin + Math.random() * (p.moteRadiusMax - p.moteRadiusMin)) * (0.7 + depth * 0.5),
-            baseAlpha: 0.45 + Math.random() * 0.5,
+            baseAlpha: 0.6 + Math.random() * 0.4,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             phaseA: Math.random() * TAU,
             phaseB: Math.random() * TAU,
             pulseSpeed: p.pulseSpeedMin + Math.random() * (p.pulseSpeedMax - p.pulseSpeedMin),
             speck: Math.random() < p.speckChance
+        };
+    }
+
+    function createMist(i) {
+        const p = PALETTES.light;
+        const angle = Math.random() * TAU;
+        const speed = 0.025 + Math.random() * 0.06;
+        return {
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: p.mistRadiusMin + Math.random() * (p.mistRadiusMax - p.mistRadiusMin),
+            baseAlpha: 0.55 + Math.random() * 0.4,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            phase: Math.random() * TAU,
+            pulseSpeed: 0.00018 + Math.random() * 0.00035,
+            // alternate warm / violet so neighbours contrast
+            violet: i % 2 === 1
         };
     }
 
@@ -229,6 +256,12 @@
 
         hazes = new Array(hazeCount);
         for (let i = 0; i < hazeCount; i += 1) hazes[i] = createHaze();
+
+        const mistCount = width < 700
+            ? Math.max(3, Math.round(PALETTES.light.mistCount / 2))
+            : PALETTES.light.mistCount;
+        mists = new Array(mistCount);
+        for (let i = 0; i < mistCount; i += 1) mists[i] = createMist(i);
 
         motes = new Array(moteCount);
         for (let i = 0; i < moteCount; i += 1) motes[i] = createMote();
@@ -314,6 +347,28 @@
 
     function drawLight(time, step) {
         // Normal compositing — additive would wash out on a light background
+
+        // 1. Soft colour mist behind the motes (depth)
+        for (let i = 0; i < mists.length; i += 1) {
+            const g = mists[i];
+            const pulse = 0.75 + Math.sin(time * g.pulseSpeed + g.phase) * 0.25;
+            const s = g.r * 2;
+
+            ctx.globalAlpha = Math.max(0, g.baseAlpha * pulse * themeFade);
+            ctx.drawImage(
+                g.violet ? sprites.mistViolet : sprites.mistWarm,
+                g.x - g.r, g.y - g.r, s, s
+            );
+
+            g.x += g.vx * step;
+            g.y += g.vy * step;
+            if (g.x < -g.r) g.x = width + g.r;
+            else if (g.x > width + g.r) g.x = -g.r;
+            if (g.y < -g.r) g.y = height + g.r;
+            else if (g.y > height + g.r) g.y = -g.r;
+        }
+
+        // 2. Motes
         for (let i = 0; i < motes.length; i += 1) {
             const m = motes[i];
 

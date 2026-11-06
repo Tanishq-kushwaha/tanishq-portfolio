@@ -143,7 +143,11 @@ button {
 
 /* =========================================================
    03. BACKGROUND LAYER
-   Canvas (particles) + mesh gradient behind it
+   Layer stack (back -> front):
+     1. .bg-layer        tinted base gradient + vignette
+     2. ::before         drifting mesh gradient (ember + violet)
+     3. #bg-canvas       particles (background.js)
+     4. ::after          film grain (overlay blend)
 ========================================================= */
 .bg-layer {
     position: fixed;
@@ -151,59 +155,74 @@ button {
     z-index: -1;
     pointer-events: none;
     overflow: hidden;
-    background: var(--bg);
 
-    /* Vignette — darkens the edges so the centre feels lit.
-       Inset shadow paints above the bg but below the mesh, so the
-       translucent colour blobs glow on top of it. */
-    box-shadow: inset 0 0 240px 40px rgba(8, 4, 14, 0.18);
+    /* Light: paper that is lighter at the top and settles into a
+       lilac-grey at the bottom — gives the page a sense of light
+       direction instead of one flat fill. Stays within the --bg family. */
+    background:
+        linear-gradient(180deg, #f8f4fa 0%, var(--bg) 42%, #e9e0ee 100%);
+
+    /* Soft violet-tinted vignette (not black — black would look muddy
+       on a light page). */
+    box-shadow: inset 0 0 220px 30px rgba(110, 80, 150, 0.16);
 }
 
 [data-theme="dark"] .bg-layer {
-    box-shadow: inset 0 0 260px 60px rgba(4, 2, 8, 0.65);
+    background:
+        linear-gradient(180deg, #140e1c 0%, var(--bg) 45%, #0b0810 100%);
+    box-shadow: inset 0 0 280px 70px rgba(3, 1, 7, 0.7);
 }
 
 
 /* Mesh gradient — light mode.
-   Oversized (-12%) so it can drift slowly without exposing edges.
-   Colours come from --accent-rgb / --accent-2-rgb, so they follow the
-   theme automatically. Animated with `translate`/`scale` only
-   (compositor-friendly, no repaint per frame). */
+   Oversized (-15%) so it can drift without exposing edges.
+   Colours come from --accent-rgb / --accent-2-rgb so they follow the
+   theme. Six blobs + one diagonal light band. Animated with
+   `translate`/`scale` only (compositor-friendly, no repaint). */
 .bg-layer::before {
     content: "";
     position: absolute;
-    inset: -12%;
+    inset: -15%;
     pointer-events: none;
     background:
-        radial-gradient(ellipse 900px 700px at 12% 16%, rgba(var(--accent-rgb), 0.13), transparent 62%),
-        radial-gradient(ellipse 800px 650px at 90% 20%, rgba(var(--accent-2-rgb), 0.20), transparent 62%),
-        radial-gradient(ellipse 900px 700px at 82% 92%, rgba(var(--accent-rgb), 0.09), transparent 62%),
-        radial-gradient(ellipse 1000px 700px at 28% 100%, rgba(var(--accent-2-rgb), 0.14), transparent 62%),
-        radial-gradient(ellipse 600px 450px at 55% 50%, rgba(var(--accent-rgb), 0.05), transparent 70%);
-    animation: mesh-drift 38s ease-in-out infinite alternate;
+        /* warm sun-glow, top-left */
+        radial-gradient(ellipse 950px 750px at 10% 12%, rgba(255, 150, 90, 0.34), transparent 64%),
+        /* violet bloom, top-right */
+        radial-gradient(ellipse 900px 720px at 92% 16%, rgba(var(--accent-2-rgb), 0.42), transparent 64%),
+        /* ember wash, bottom-right */
+        radial-gradient(ellipse 950px 750px at 84% 94%, rgba(var(--accent-rgb), 0.20), transparent 64%),
+        /* violet pool, bottom-left */
+        radial-gradient(ellipse 1050px 750px at 24% 100%, rgba(var(--accent-2-rgb), 0.32), transparent 64%),
+        /* soft peach core so the middle isn't empty */
+        radial-gradient(ellipse 700px 520px at 52% 46%, rgba(255, 170, 120, 0.16), transparent 70%),
+        radial-gradient(ellipse 520px 420px at 70% 58%, rgba(var(--accent-2-rgb), 0.14), transparent 70%),
+        /* faint diagonal light band for depth */
+        linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.35) 50%, transparent 62%);
+    animation: mesh-drift 34s ease-in-out infinite alternate;
     will-change: translate, scale;
 }
 
-/* Mesh gradient — dark mode: richer, deeper, violet + ember */
+/* Mesh gradient — dark mode: deeper, richer, clearly violet + ember */
 [data-theme="dark"] .bg-layer::before {
     background:
-        radial-gradient(ellipse 950px 720px at 12% 16%, rgba(var(--accent-rgb), 0.20), transparent 62%),
-        radial-gradient(ellipse 850px 680px at 90% 20%, rgba(var(--accent-2-rgb), 0.28), transparent 62%),
-        radial-gradient(ellipse 950px 720px at 82% 92%, rgba(var(--accent-rgb), 0.12), transparent 62%),
-        radial-gradient(ellipse 1050px 720px at 28% 100%, rgba(var(--accent-2-rgb), 0.20), transparent 62%),
-        radial-gradient(ellipse 650px 480px at 55% 50%, rgba(var(--accent-rgb), 0.07), transparent 70%);
+        radial-gradient(ellipse 1000px 780px at 10% 12%, rgba(var(--accent-rgb), 0.36), transparent 64%),
+        radial-gradient(ellipse 950px 760px at 92% 16%, rgba(var(--accent-2-rgb), 0.55), transparent 64%),
+        radial-gradient(ellipse 1000px 780px at 84% 94%, rgba(var(--accent-rgb), 0.24), transparent 64%),
+        radial-gradient(ellipse 1100px 780px at 24% 100%, rgba(var(--accent-2-rgb), 0.42), transparent 64%),
+        radial-gradient(ellipse 720px 540px at 52% 46%, rgba(var(--accent-rgb), 0.12), transparent 70%),
+        radial-gradient(ellipse 560px 440px at 70% 58%, rgba(var(--accent-2-rgb), 0.20), transparent 70%),
+        /* faint violet band instead of a white one */
+        linear-gradient(115deg, transparent 38%, rgba(var(--accent-2-rgb), 0.10) 50%, transparent 62%);
 }
 
 @keyframes mesh-drift {
-    0%   { translate: -1.5% -1%;  scale: 1;    }
-    50%  { translate: 1.5% 1.2%;  scale: 1.05; }
-    100% { translate: -0.5% 1.5%; scale: 1.02; }
+    0%   { translate: -2% -1.5%;  scale: 1;    }
+    50%  { translate: 2% 1.8%;    scale: 1.07; }
+    100% { translate: -0.8% 2.2%; scale: 1.03; }
 }
 
-/* Noise texture overlay — fine film grain for editorial premium feel.
-   Inline SVG (feTurbulence) = zero HTTP requests, scales infinitely.
-   Higher base frequency + 3 octaves = finer, more photographic grain.
-   `mix-blend-mode: overlay` adapts to any bg. */
+/* Film grain — fine, photographic. Inline SVG (feTurbulence),
+   zero requests. `overlay` adapts to either theme. */
 .bg-layer::after {
     content: "";
     position: absolute;
@@ -211,27 +230,28 @@ button {
     pointer-events: none;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
     background-repeat: repeat;
-    opacity: 0.06;
+    opacity: 0.09;
     mix-blend-mode: overlay;
 }
 
 [data-theme="dark"] .bg-layer::after {
-    opacity: 0.11;
+    opacity: 0.13;
 }
 
-/* Canvas sits on top of the mesh (particles only, transparent bg).
-   background.js draws near-full-alpha particles; this opacity is the
-   master visibility dial per theme. */
+/* Particle canvas. background.js draws near-full-alpha particles;
+   this opacity is the master visibility dial per theme.
+   Light mode is lower than dark because dark particles on a light
+   page read much heavier than glowing particles on a dark one. */
 #bg-canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.25;
+    opacity: 0.6;
 }
 
 [data-theme="dark"] #bg-canvas {
-    opacity: 0.42;
+    opacity: 0.85;
 }
 
 
