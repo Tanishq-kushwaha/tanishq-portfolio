@@ -216,7 +216,11 @@
     ========================================================= */
     let lenis = null;
 
-    if (typeof Lenis !== 'undefined') {
+    // Diagnostic experiment: touch devices keep native browser scrolling.
+    // Lenis remains desktop-only so GSAP's ticker never runs on coarse pointers,
+    // the existing native scroll listeners continue to drive sticky nav updates,
+    // and anchor navigation still uses the browser default on touch devices.
+    if (typeof Lenis !== 'undefined' && isFine) {
         lenis = new Lenis({
             autoRaf: false,                          // GSAP ticker drives it
             duration: 1.2,                           // 1.1–1.3 = premium, not floaty
